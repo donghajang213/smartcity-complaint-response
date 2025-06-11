@@ -72,13 +72,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
             --comment "Deploy backend via SSM" \
-            --parameters '{
-              "commands": [
-                "aws s3 cp s3://smartcity-bucket-ksva/app.jar /home/ubuntu/smartcity-complaint-response/app.jar",
-                "cd /home/ubuntu/smartcity-complaint-response",
-                "chmod +x deploy.sh",
-                "./deploy.sh"
-              ]
-            }' \
+            --parameters '{"commands":["aws s3 cp s3://smartcity-bucket-ksva/app.jar /home/ubuntu/smartcity-complaint-response/app.jar","cd /home/ubuntu/smartcity-complaint-response","chmod +x deploy.sh","./deploy.sh"]}' \
             --timeout-seconds 600 \
             --region ap-northeast-2
+
