@@ -62,7 +62,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload JAR to S3                            # ← 추가됨: S3에 JAR 업로드
-        run: aws s3 cp ${{ env.JAR_PATH }} s3://my-bucket/app.jar
+        run: aws s3 cp ${{ env.JAR_PATH }} s3://smartcity-bucket-ksva/app.jar
 
       - name: Deploy via SSM                              # ← 수정됨: SSM으로 스크립트 실행
         run: |
