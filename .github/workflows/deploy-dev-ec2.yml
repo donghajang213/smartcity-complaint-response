@@ -51,8 +51,9 @@ jobs:
       - name: Find built JAR file
         id: find_jar
         run: |
-          JAR_PATH=$(find backend/build/libs -name "*.jar" | head -n 1)
+          JAR_PATH=$(find backend/build/libs -type f -name "*-SNAPSHOT.jar" ! -name "*-plain.jar" | head -n 1)
           echo "JAR_PATH=$JAR_PATH" >> $GITHUB_ENV
+
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
