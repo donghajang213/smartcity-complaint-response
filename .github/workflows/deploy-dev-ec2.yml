@@ -54,21 +54,23 @@ jobs:
           JAR_PATH=$(find backend/build/libs -name "*.jar" | head -n 1)
           echo "JAR_PATH=$JAR_PATH" >> $GITHUB_ENV
 
-      - name: Configure AWS Credentials                  # ← 수정됨: AWS 자격증명 설정
-        uses: aws-actions/configure-aws-credentials@v2   # ← 수정됨
-        with:                                            # ← 수정됨
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-region:            ap-northeast-2
 
-      - name: Upload JAR to S3                            # ← 추가됨: S3에 JAR 업로드
-        run: aws s3 cp ${{ env.JAR_PATH }} s3://smartcity-bucket-ksva/app.jar
+      - name: Upload JAR to S3
+        run: |
+          echo "Uploading ${{ env.JAR_PATH }} to S3 bucket..."
+          aws s3 cp "${{ env.JAR_PATH }}" s3://smartcity-bucket-ksva/app.jar
 
       - name: Deploy via SSM
         run: |
           aws ssm send-command \
-            --instance-ids ${{ env.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
+            --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
             --comment "Deploy backend via SSM" \
             --parameters '{
               "commands": [
@@ -80,4 +82,3 @@ jobs:
             }' \
             --timeout-seconds 600 \
             --region ap-northeast-2
-
