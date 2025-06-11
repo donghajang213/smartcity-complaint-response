@@ -13,10 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      #SSH 관련 시크릿 제거
-      #EC2_HOST: ${{ secrets.EC2_HOST }}
-      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}  # ← 수정됨
-      #EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
     services:
       postgres:
@@ -43,9 +40,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Wait for PostgreSQL
-        run: sleep 15
-
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
         working-directory: ./backend
@@ -58,43 +52,28 @@ jobs:
         id: find_jar
         run: |
           JAR_PATH=$(find backend/build/libs -name "*.jar" | head -n 1)
-          if [ -z "$JAR_PATH" ]; then
-            echo "❌ JAR file not found! Build may have failed."
-            exit 1
-          fi
-          echo "✅ Found JAR: $JAR_PATH"
           echo "JAR_PATH=$JAR_PATH" >> $GITHUB_ENV
 
-      # ───────────────────────────────────────────────────────────────────────────
-      # 아래 SSH/SCP 단계를 SSM Send Command로 대체
-      - name: Configure AWS Credentials                  # ← 추가됨
-        uses: aws-actions/configure-aws-credentials@v2   # ← 추가됨
-        with:                                            # ← 추가됨
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}       # ← 추가됨
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # ← 추가됨
-          aws-region: ap-northeast-2                           # ← 추가됨
+      - name: Configure AWS Credentials                  # ← 수정됨: AWS 자격증명 설정
+        uses: aws-actions/configure-aws-credentials@v2   # ← 수정됨
+        with:                                            # ← 수정됨
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-      - name: Deploy via SSM                               # ← 추가됨
+      - name: Upload JAR to S3                            # ← 추가됨: S3에 JAR 업로드
+        run: aws s3 cp ${{ env.JAR_PATH }} s3://my-bucket/app.jar
+
+      - name: Deploy via SSM                              # ← 수정됨: SSM으로 스크립트 실행
         run: |
           aws ssm send-command \
             --instance-ids ${{ env.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy backend via SSM" \
-            --parameters commands=["cd /home/ubuntu/smartcity-complaint-response/infra","docker compose down","docker compose up -d --build"] \
+            --parameters commands=[
+              "aws s3 cp s3://my-bucket/app.jar ~/smartcity-complaint-response/app.jar",
+              "cd ~/smartcity-complaint-response",
+              "chmod +x deploy.sh",
+              "./deploy.sh"
+            ] \
             --timeout-seconds 600
-
-      # 기존 Copy JAR / SSH 단계 제거됨
-      # - name: Copy JAR to EC2
-      #   run: |
-      #     echo "$EC2_SSH_KEY" > private_key.pem
-      #     chmod 600 private_key.pem
-      #     scp -i private_key.pem -o StrictHostKeyChecking=no "$JAR_PATH" ubuntu@$EC2_HOST:~/smartcity-complaint-response/backend/app.jar
-      #
-      # - name: SSH and deploy on EC2
-      #   run: |
-      #     ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@$EC2_HOST << 'EOF'
-      #     cd ~/smartcity-complaint-response/infra
-      #     docker compose down
-      #     docker compose up -d --build
-      #     EOF
-      # ───────────────────────────────────────────────────────────────────────────
