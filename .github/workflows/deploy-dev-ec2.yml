@@ -74,8 +74,8 @@ jobs:
             --comment "Deploy backend via SSM" \
             --parameters '{
               "commands": [
-                "aws s3 cp s3://smartcity-bucket-ksva/app.jar ~/smartcity-complaint-response/app.jar",
-                "cd ~/smartcity-complaint-response",
+                "aws s3 cp s3://smartcity-bucket-ksva/app.jar /home/ubuntu/smartcity-complaint-response/app.jar",
+                "cd /home/ubuntu/smartcity-complaint-response",
                 "chmod +x deploy.sh",
                 "./deploy.sh"
               ]
