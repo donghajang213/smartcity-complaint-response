@@ -1,19 +1,7 @@
 import { useState } from "react";
 import { signup } from "../api/auth";
 
-const mbtiOptions = [
-  "INTJ", "INTP", "ENTJ", "ENTP",
-  "INFJ", "INFP", "ENFJ", "ENFP",
-  "ISTJ", "ISFJ", "ESTJ", "ESFJ",
-  "ISTP", "ISFP", "ESTP", "ESFP",
-];
 
-const departmentOptions = [
-  "경영학과", "경제학과", "컴퓨터공학과", "소프트웨어학과", "의학과", "간호학과", "심리학과", "사회학과",
-  "정치외교학과", "법학과", "전자공학과", "기계공학과", "산업공학과", "화학공학과", "토목공학과", "건축학과",
-  "영어영문학과", "국어국문학과", "수학과", "물리학과", "화학과", "생명과학과", "체육학과", "교육학과",
-  "철학과", "중어중문학과", "일어일문학과", "사학과", "항공우주공학과", "바이오공학과",
-];
 
 function Signup() {
   const [form, setForm] = useState({
@@ -21,10 +9,6 @@ function Signup() {
     email: "",
     password: "",
     phone: "",
-    mbti: "",
-    grade: "",
-    stdNum: "",
-    department: "",
   });
 
   const handleChange = (e) => {
@@ -102,63 +86,12 @@ function Signup() {
             />
           </div>
 
-          {/* MBTI 선택 */}
-          <div>
-            <label className="block mb-1">MBTI</label>
-            <select
-              name="mbti"
-              value={form.mbti}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              required
-            >
-              <option value="">선택하세요</option>
-              {mbtiOptions.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
+        
 
-          {/* 학년 */}
-          <div>
-            <label className="block mb-1">학년</label>
-            <input
-              type="number"
-              name="grade"
-              value={form.grade}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+     
 
-          {/* 학번 */}
-          <div>
-            <label className="block mb-1">학번</label>
-            <input
-              type="number"
-              name="stdNum"
-              value={form.stdNum}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+          
 
-          {/* 학과 선택 */}
-          <div>
-            <label className="block mb-1">학과</label>
-            <select
-              name="department"
-              value={form.department}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              required
-            >
-              <option value="">선택하세요</option>
-              {departmentOptions.map((dept) => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
-          </div>
 
           {/* 제출 버튼 */}
           <button
