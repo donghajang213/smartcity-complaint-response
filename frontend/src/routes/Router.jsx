@@ -14,7 +14,7 @@ export default function Router() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/admin/pending" element={<AdminPending />} />
-        <Route path="/home" element={<MainPage />} />
+        <Route path="/" element={<MainPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
       </Routes>
     </BrowserRouter>
