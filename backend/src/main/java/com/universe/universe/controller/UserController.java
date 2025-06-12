@@ -29,6 +29,7 @@ public class UserController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> signup(@Valid @RequestBody SignupRequest request) {
+
         userService.signup(request);
         return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
     }
@@ -46,17 +47,17 @@ public class UserController {
         return ResponseEntity.ok(Map.of("token", token));
     }
 
-    // ✅ 승인 대기중인 ADMIN 유저 조회 (관리자용)
-    @GetMapping("/admin/users/pending")
-    public ResponseEntity<List<User>> getPendingAdmins() {
-        List<User> pendingAdmins = userService.getPendingAdmins();
-        return ResponseEntity.ok(pendingAdmins);
-    }
+//    // ✅ 승인 대기중인 ADMIN 유저 조회 (관리자용)
+//    @GetMapping("/admin/users/pending")
+//    public ResponseEntity<List<User>> getPendingAdmins() {
+//        List<User> pendingAdmins = userService.getPendingAdmins();
+//        return ResponseEntity.ok(pendingAdmins);
+//    }
 
     // ✅ ADMIN 승인 처리 (관리자용)
-    @PutMapping("/admin/users/{id}/approve")
-    public ResponseEntity<Map<String, String>> approveAdmin(@PathVariable Long id) {
-        userService.approveAdmin(id);
-        return ResponseEntity.ok(Map.of("message", "승인이 완료되었습니다."));
-    }
+//    @PutMapping("/admin/users/{id}/approve")
+//    public ResponseEntity<Map<String, String>> approveAdmin(@PathVariable Long id) {
+//        userService.approveAdmin(id);
+//        return ResponseEntity.ok(Map.of("message", "승인이 완료되었습니다."));
+//    }
 }

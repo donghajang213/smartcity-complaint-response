@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface UserService {
     void signup(SignupRequest request);
-    List<User> getPendingAdmins();
-    void approveAdmin(Long id);
+//    List<User> getPendingAdmins();
+//    void approveAdmin(Long id);
 }
-

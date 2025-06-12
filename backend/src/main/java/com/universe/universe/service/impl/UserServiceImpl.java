@@ -30,27 +30,22 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .phone(request.getPhone())
-                .mbti(request.getMbti())
-                .grade(request.getGrade())
-                .stdNum(request.getStdNum())
-                .department(request.getDepartment())
-                .role("USER")
-                .status("pending")
+                .role("FREE")
                 .build();
 
         userRepository.save(user);
     }
 
-    @Override
-    public List<User> getPendingAdmins() {
-        return userRepository.findByRoleAndStatus("ADMIN", "pending");
-    }
+//    @Override
+//    public List<User> getPendingAdmins() {
+//        return userRepository.findByRoleAndStatus("ADMIN", "pending");
+//    }
 
-    @Override
-    public void approveAdmin(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
-        user.setStatus("allow");
-        userRepository.save(user);
-    }
+//    @Override
+//    public void approveAdmin(Long id) {
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+//        user.setStatus("allow");
+//        userRepository.save(user);
+//    }
 }
