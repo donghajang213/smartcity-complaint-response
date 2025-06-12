@@ -20,6 +20,7 @@ public class User {
 
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -30,22 +31,8 @@ public class User {
     private String phone;
 
     @Column(nullable = false)
-    private String role = "USER";
+    private String role = "FREE";
 
-    @Column(nullable = false)
-    private String mbti;
-
-    @Column(nullable = false)
-    private Long grade;
-
-    @Column(nullable = false)
-    private Long stdNum;
-
-    @Column(nullable = false)
-    private String status = "PENDING";
-
-    @Column(nullable = false)
-    private String department;
 
     @Column(updatable = true)
     @CreationTimestamp
