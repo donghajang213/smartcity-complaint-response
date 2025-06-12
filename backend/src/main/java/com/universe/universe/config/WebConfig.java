@@ -8,8 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")  // 모든 경로
-                .allowedOrigins("http://localhost:5173")  // 프론트 주소
+        registry.addMapping("/**")
+                // 로컬 개발 서버 & Vercel 배포 URL 둘 다 허용
+                .allowedOriginPatterns("http://*localhost:5173", "https://*.vercel.app")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
