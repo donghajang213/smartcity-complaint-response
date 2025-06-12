@@ -1,16 +1,14 @@
 // src/api/auth.js
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
+// BASE_URL 자체를 제거합니다.
 export const signup = async (formData) => {
-  const response = await axios.post(`${BASE_URL}/api/signup`, formData);
-  return response.data;
+  const { data } = await axios.post(`/api/signup`, formData);
+  return data;
 };
 
 export const login = async (formData) => {
-  const response = await axios.post(`${BASE_URL}/api/login`, formData);
-  const token = response.data.token;
-  localStorage.setItem("jwt", token); // 여기서 저장
-  return response.data;
+  const { data } = await axios.post(`/api/login`, formData);
+  localStorage.setItem("jwt", data.token);
+  return data;
 };
