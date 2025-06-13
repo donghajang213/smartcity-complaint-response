@@ -20,3 +20,4 @@ server:
 external:
   fastapi:
     url: http://localhost:8001/chat
+
