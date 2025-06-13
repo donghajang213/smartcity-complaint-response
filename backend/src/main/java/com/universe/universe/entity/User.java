@@ -27,11 +27,12 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phone;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "FREE";
+    private Role role = Role.FREE;
 
 
     @Column(updatable = true)
