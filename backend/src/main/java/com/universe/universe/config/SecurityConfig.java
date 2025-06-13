@@ -36,11 +36,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/signup", "/api/login","/api/login/google").permitAll()
+                        .requestMatchers("/api/signup", "/api/login/**", "/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable());
-
+                .userDetailsService(userDetailsService) // 추가
+                .formLogin(form -> form.disable())
+                .httpBasic(Customizer.withDefaults());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

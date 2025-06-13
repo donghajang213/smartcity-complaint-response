@@ -30,13 +30,14 @@ public class User {
     @Column(unique = true)
     private String phone;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "FREE";
-
+    @Builder.Default
+    private Role role = Role.FREE;
 
     @Column(updatable = true)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-
 }
+

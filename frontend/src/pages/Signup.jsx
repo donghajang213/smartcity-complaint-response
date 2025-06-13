@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { signup } from "../api/auth";
-
-
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [form, setForm] = useState({
@@ -10,6 +9,8 @@ function Signup() {
     password: "",
     phone: "",
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({
@@ -23,7 +24,11 @@ function Signup() {
     try {
       const result = await signup(form);
       alert("회원가입 성공!");
-      console.log("백엔드 응답:", result);
+
+      // alert가 끝난 뒤 로그인 화면으로 이동
+      setTimeout(() => {
+        navigate("/login");
+      }, 100); // 0.1초 딜레이
     } catch (err) {
       alert("회원가입 실패");
       console.error("에러 발생:", err);
@@ -35,7 +40,6 @@ function Signup() {
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">회원가입</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* 이름 */}
           <div>
             <label className="block mb-1">이름</label>
             <input
@@ -47,7 +51,6 @@ function Signup() {
             />
           </div>
 
-          {/* 이메일 */}
           <div>
             <label className="block mb-1">이메일</label>
             <input
@@ -60,7 +63,6 @@ function Signup() {
             />
           </div>
 
-          {/* 비밀번호 */}
           <div>
             <label className="block mb-1">비밀번호</label>
             <input
@@ -73,7 +75,6 @@ function Signup() {
             />
           </div>
 
-          {/* 전화번호 */}
           <div>
             <label className="block mb-1">전화번호</label>
             <input
@@ -86,14 +87,6 @@ function Signup() {
             />
           </div>
 
-        
-
-     
-
-          
-
-
-          {/* 제출 버튼 */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
