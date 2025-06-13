@@ -20,32 +20,22 @@ public class User {
 
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phone;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "USER";
+    @Builder.Default
+    private Role role = Role.FREE;
 
-    @Column(nullable = false)
-    private String mbti;
 
-    @Column(nullable = false)
-    private Long grade;
-
-    @Column(nullable = false)
-    private Long stdNum;
-
-    @Column(nullable = false)
-    private String status = "PENDING";
-
-    @Column(nullable = false)
-    private String department;
 
     @Column(updatable = true)
     @CreationTimestamp

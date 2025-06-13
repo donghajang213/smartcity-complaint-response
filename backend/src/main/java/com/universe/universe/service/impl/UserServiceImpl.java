@@ -1,6 +1,7 @@
 package com.universe.universe.service.impl;
 
 import com.universe.universe.dto.SignupRequest;
+import com.universe.universe.entity.Role;
 import com.universe.universe.entity.User;
 import com.universe.universe.repository.UserRepository;
 import com.universe.universe.service.UserService;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -30,27 +32,24 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .phone(request.getPhone())
-                .mbti(request.getMbti())
-                .grade(request.getGrade())
-                .stdNum(request.getStdNum())
-                .department(request.getDepartment())
-                .role("USER")
-                .status("pending")
+                .role(request.getRole() != null ? request.getRole() : Role.FREE)  // ✅ 기본값 처리
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
     }
 
-    @Override
-    public List<User> getPendingAdmins() {
-        return userRepository.findByRoleAndStatus("ADMIN", "pending");
-    }
+//    @Override
+//    public List<User> getPendingAdmins() {
+//        return userRepository.findByRoleAndStatus("ADMIN", "pending");
+//    }
 
-    @Override
-    public void approveAdmin(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
-        user.setStatus("allow");
-        userRepository.save(user);
-    }
+//    @Override
+//    public void approveAdmin(Long id) {
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+//        user.setStatus("allow");
+//        userRepository.save(user);
+//    }
 }
+

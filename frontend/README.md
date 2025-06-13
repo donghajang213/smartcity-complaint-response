@@ -79,6 +79,9 @@ npm install axios react react-dom react-router-dom
 | `autoprefixer`       | CSS 벤더 접두사 자동 추가 도구 |
 | `vite`               | 빠른 빌드 및 개발 서버       |
 
+npm install react-icons
+
+
 ---
 
 ## 📁 프로젝트 구조 (예시)
