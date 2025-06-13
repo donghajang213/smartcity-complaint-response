@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"
 import { login } from "../api/auth";
 import { FcGoogle } from "react-icons/fc";
 import { SiKakaotalk, SiNaver } from "react-icons/si";
 
 function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -15,7 +17,8 @@ function Login() {
     try {
       const result = await login(form);
       localStorage.setItem("jwt", result.token);
-      alert("로그인 성공!");
+      alert("로그인 성공")
+      navigate("/chatbot")
     } catch (err) {
       alert("로그인 실패");
       console.error(err);
