@@ -27,7 +27,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phone;
 
     @Column(nullable = false)
@@ -37,4 +37,6 @@ public class User {
     @Column(updatable = true)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+
 }

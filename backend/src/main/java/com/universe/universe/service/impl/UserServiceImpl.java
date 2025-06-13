@@ -8,14 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public void signup(SignupRequest request) {
@@ -35,6 +34,22 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
     }
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+    @Override
+    public User registerGoogleUser(String email, String name, String phone) {
+        User user = new User();
+        user.setEmail(email);
+        user.setName(name);
+        user.setPhone(phone);  // phone이 없으면 null 넣어도 됨
+        return userRepository.save(user);
+    }
+
+
+
+
 
 //    @Override
 //    public List<User> getPendingAdmins() {
