@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://13.124.223.79:5432/smartcity_db
+    url: jdbc:postgresql://postgres:5432/smartcity_db
     username: user
     password: password
     driver-class-name: org.postgresql.Driver   # ← 드라이버 클래스 명시
