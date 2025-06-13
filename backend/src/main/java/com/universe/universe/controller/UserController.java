@@ -62,6 +62,7 @@ public class UserController {
                 )
         );
     }
+}
 
 //    // ✅ 승인 대기중인 ADMIN 유저 조회 (관리자용)
 //    @GetMapping("/admin/users/pending")
