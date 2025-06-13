@@ -5,6 +5,9 @@ import Login from "../pages/Login";
 
 import AdminPending from "../pages/AdminPending";
 import MainPage from "../pages/MainPage";
+import { CheckoutPage } from "../pages/pay/CheckoutPage";
+import { SuccessPage } from "../pages/pay/SuccessPage";
+import { FailPage } from "../pages/pay/FailPage";
 
 export default function Router() {
   return (
@@ -15,6 +18,9 @@ export default function Router() {
 
         <Route path="/admin/pending" element={<AdminPending />} />
         <Route path="/" element={<MainPage />} />
+        <Route path="/pay" element={<CheckoutPage />} />
+        <Route path="/pay/success" element={<SuccessPage />} />
+        <Route path="/pay/fail" element={<FailPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
       </Routes>
     </BrowserRouter>
