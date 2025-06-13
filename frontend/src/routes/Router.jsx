@@ -3,8 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Signup       from "../pages/Signup";
 import Login        from "../pages/Login";
 import AdminPending from "../pages/AdminPending";
+import Subscribe from "../pages/subscribe";
 import HomePage     from "../pages/HomePage";   // 비디오 히어로
 import ChatPage     from "../pages/ChatPage";   // 챗봇 메인
+
 
 export default function Router() {
   return (
@@ -14,7 +16,7 @@ export default function Router() {
       <Route path="/login"      element={<Login />} />
       <Route path="/signup"     element={<Signup />} />
       <Route path="/admin/pending" element={<AdminPending />} />
-
+      <Route path="/subscribe" element={<Subscribe />} />
       {/* 로그인 후 챗봇 페이지 */}
       <Route path="/chatbot"    element={<ChatPage />} />
 
