@@ -35,6 +35,7 @@ public class User {
     private Role role = Role.FREE;
 
 
+
     @Column(updatable = true)
     @CreationTimestamp
     private LocalDateTime createdAt;

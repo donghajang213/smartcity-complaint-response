@@ -76,4 +76,3 @@ public class UserController {
 //        userService.approveAdmin(id);
 //        return ResponseEntity.ok(Map.of("message", "승인이 완료되었습니다."));
 //    }
-}
