@@ -1,6 +1,12 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "http://13.124.223.79/api/:path*" },
-    { "source": "/(.*)",      "destination": "/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "https://13.124.223.79/api/:path*"   // ✅ HTTPS로 변경
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
