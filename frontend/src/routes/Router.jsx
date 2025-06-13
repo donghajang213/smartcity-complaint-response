@@ -31,6 +31,5 @@ export default function Router() {
         <Route path="/pay/fail" element={<FailPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
       </Routes>
-    </BrowserRouter>
   );
 }
