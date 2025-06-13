@@ -10,3 +10,4 @@ public interface UserService {
 //    List<User> getPendingAdmins();
 //    void approveAdmin(Long id);
 }
+
