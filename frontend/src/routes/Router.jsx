@@ -1,22 +1,25 @@
 // src/routes/Router.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Signup from "../pages/Signup";
-import Login from "../pages/Login";
-
+import { Routes, Route, Navigate } from "react-router-dom";
+import Signup       from "../pages/Signup";
+import Login        from "../pages/Login";
 import AdminPending from "../pages/AdminPending";
-import MainPage from "../pages/MainPage";
+import HomePage     from "../pages/HomePage";   // 비디오 히어로
+import ChatPage     from "../pages/ChatPage";   // 챗봇 메인
 
 export default function Router() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+    <Routes>
+      {/* 공개 페이지 */}
+      <Route path="/"           element={<HomePage />} />
+      <Route path="/login"      element={<Login />} />
+      <Route path="/signup"     element={<Signup />} />
+      <Route path="/admin/pending" element={<AdminPending />} />
 
-        <Route path="/admin/pending" element={<AdminPending />} />
-        <Route path="/" element={<MainPage />} />
-        {/* 예: <Route path="/" element={<Home />} /> */}
-      </Routes>
-    </BrowserRouter>
+      {/* 로그인 후 챗봇 페이지 */}
+      <Route path="/chatbot"    element={<ChatPage />} />
+
+      {/* 그 외 경로는 홈으로 */}
+      <Route path="*"           element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
