@@ -5,6 +5,7 @@ import Login from "../pages/Login";
 
 import AdminPending from "../pages/AdminPending";
 import MainPage from "../pages/MainPage";
+import Subscribe from "../pages/subscribe";
 
 export default function Router() {
   return (
@@ -14,7 +15,8 @@ export default function Router() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/admin/pending" element={<AdminPending />} />
-        <Route path="/home" element={<MainPage />} />
+        <Route path="/" element={<MainPage />} />
+        <Route path="/subscribe" element={<Subscribe />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
       </Routes>
     </BrowserRouter>
