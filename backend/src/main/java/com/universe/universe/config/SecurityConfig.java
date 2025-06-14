@@ -36,7 +36,11 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/signup", "/api/login/**", "/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/signup", "/api/signup/**",
+                                "/api/login", "/api/login/**",
+                                "/api/auth/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService) // 추가
@@ -62,11 +66,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
+
         config.setAllowedOrigins(List.of(
-        "http://localhost:5173",                     // 로컬 개발
-        "https://smartcity-rust.vercel.app"          // Vercel 프로덕션
+                "http://localhost:5173",                      // 로컬 개발용
+                "https://smartcity-rust.vercel.app",          // Vercel 배포 도메인
+                "https://smartcityksva.site",                 // naked domain
+                "https://www.smartcityksva.site"              // www 포함 도메인 ← 반드시 포함해야 함!
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -75,4 +82,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 }

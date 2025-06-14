@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/smartcity_db
+    url: jdbc:postgresql://13.124.223.79:5432/smartcity_db
     username: user
     password: password
     driver-class-name: org.postgresql.Driver   # ← 드라이버 클래스 명시
@@ -21,3 +21,8 @@ external:
   fastapi:
     url: http://localhost:8001/chat
 
+recaptcha:
+  secret: 6Ld1lmArAAAAAGvarEbptb3-i1gnutfvF3L2w0ub
+
+kakao:
+  rest-api-key: 8413a4aab24c3a25cc81eb161bcd7277
