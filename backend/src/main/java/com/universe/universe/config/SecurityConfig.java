@@ -36,9 +36,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/signup", "/api/login").permitAll()
+                        .requestMatchers("/api/signup", "/api/login/**", "/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .userDetailsService(userDetailsService) // 추가
                 .formLogin(form -> form.disable())
                 .httpBasic(Customizer.withDefaults());
 

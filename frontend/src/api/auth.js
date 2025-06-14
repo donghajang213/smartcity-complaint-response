@@ -1,4 +1,5 @@
 // src/api/auth.js
+console.log("axios baseURL:", axios.defaults.baseURL);
 import axios from "axios";
 
 // 개발환경에서만 BASE_URL 지정
@@ -26,5 +27,16 @@ export const login = async (formData) => {
   return data;
 };
 
+export async function loginWithGoogle({ token }) {
+  try {
+    const response = await axios.post("/api/login/google", { token });
+    return response.data; // { token: "JWT_토큰" }
+  } catch (error) {
+    console.error("Google 로그인 실패:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
 // default export
 export default axios;
+

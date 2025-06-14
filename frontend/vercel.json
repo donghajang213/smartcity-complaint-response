@@ -3,6 +3,7 @@
     {
       "source": "/api/:path*",
       "destination": "https://smartcityksva.site/api/:path*" 
+
     },
     {
       "source": "/(.*)",
