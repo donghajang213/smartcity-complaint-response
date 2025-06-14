@@ -11,13 +11,15 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // 로컬 개발 서버 & Vercel 배포 URL 둘 다 허용
-                .allowedOriginPatterns("http://*localhost:5173", "https://*.vercel.app")
+                .allowedOriginPatterns(
+                        "http://localhost:5173",
+                        "https://*.vercel.app",
+                        "https://www.smartcityksva.site", // ← 여기 추가!
+                        "https://smartcityksva.site"      // ← 이거도 있으면 더 안전
+                )
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
-
-
-
 }
+
