@@ -6,7 +6,7 @@ on:
       - dev
     paths:
       - 'ai/fastapi_openapi/**'
-      - 'ai/rag_pipeline/**'          
+      - 'ai/rag_pipeline/**'
       - '.github/workflows/deploy-fastapi.yml'
 
 jobs:
@@ -14,20 +14,26 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      EC2_HOST: ${{ secrets.EC2_HOST }}
-      EC2_USER: ubuntu
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy FastAPI via SSH
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ env.EC2_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/smartcity-complaint-response
-            git pull origin dev
-            docker compose up -d --build fastapi
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ap-northeast-2
+
+      - name: Deploy FastAPI via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
+            --comment "Deploy FastAPI container" \
+            --parameters '{"commands":[
+              "cd /home/ubuntu/smartcity-complaint-response",
+              "git pull origin dev",
+              "docker compose up -d --build fastapi"
+            ]}' \
+            --timeout-seconds 300 \
+            --region ap-northeast-2
