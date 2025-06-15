@@ -10,7 +10,8 @@ export default function ChatInput({ onSend }) {
     onSend(userMsg);
     setText('');
     try {
-      const res = await axios.post('/api/chat', { text });
+      const res = await axios.post('/api/chat', { message: text });
+      console.log("✅ 응답:", res.data); // 👈 응답 확인
       onSend({ role: 'assistant', content: res.data.answer });
     } catch (e) {
       onSend({ role: 'assistant', content: '오류가 발생했습니다.' });
