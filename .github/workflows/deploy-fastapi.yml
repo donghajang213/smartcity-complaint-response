@@ -1,0 +1,33 @@
+name: Deploy FastAPI to EC2
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'ai/fastapi_openapi/**'
+      - 'ai/rag_pipeline/**'          
+      - '.github/workflows/deploy-fastapi.yml'
+
+jobs:
+  deploy-fastapi:
+    runs-on: ubuntu-latest
+
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ubuntu
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy FastAPI via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/smartcity-complaint-response
+            git pull origin dev
+            docker compose up -d --build fastapi
