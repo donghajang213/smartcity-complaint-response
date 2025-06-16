@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import backgroundVideo from "../assets/854325-hd_1280_720_25fps.mp4";
 
