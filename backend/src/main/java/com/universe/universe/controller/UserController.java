@@ -38,6 +38,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -240,19 +241,27 @@ public class UserController {
     }
 
 
-    @GetMapping("/user/profile")
-    public ResponseEntity<UserProfileResponse> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
+//    @GetMapping("/user/profile")
+//    public ResponseEntity<UserProfileResponse> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        User user = userDetails.getUser();
+//        System.out.println("---------------------------------------" +userDetails);
+//
+//        return ResponseEntity.ok(
+//                new UserProfileResponse(
+//                        user.getName(),
+//                        user.getEmail(),
+//                        user.getPhone(),
+//                        user.getRole().name(),
+//                        user.getCreatedAt()
+//                )
+//        );
+//    }
 
-        return ResponseEntity.ok(
-                new UserProfileResponse(
-                        user.getName(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getRole().name()
-                )
-        );
+    @GetMapping("/users")
+    public List<UserProfileResponse> getUsers() {
+        return userService.getAllUsers();
     }
+
 }
 
 //    // ✅ 승인 대기중인 ADMIN 유저 조회 (관리자용)
