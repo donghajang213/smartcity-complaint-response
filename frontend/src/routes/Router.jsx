@@ -7,6 +7,9 @@ import AdminPending from "../pages/AdminPending";
 import Subscribe from "../pages/Subscribe";
 import HomePage     from "../pages/HomePage";   // 비디오 히어로
 import ChatPage     from "../pages/ChatPage";   // 챗봇 메인
+import DashBoard     from "../pages/DashBoard"; 
+import Server_Status_DashBoard     from "../pages/Server_Status_DashBoard"; 
+import User_Management_DashBoard    from "../pages/User_Management_DashBoard "; 
 
 import { CheckoutPage } from "../pages/pay/CheckoutPage";
 import { SuccessPage } from "../pages/pay/SuccessPage";
@@ -24,7 +27,10 @@ export default function Router() {
       <Route path="/subscribe" element={<Subscribe />} />
       {/* 로그인 후 챗봇 페이지 */}
       <Route path="/chatbot"    element={<ChatPage />} />
-
+      {/* 관리자 대시보드 페이지 */}
+      <Route path="/dashboard"    element={<DashBoard />} />
+      <Route path="/dashboard/server_status"    element={<Server_Status_DashBoard />} />
+      <Route path="/dashboard/manager"    element={<User_Management_DashBoard />} />    
       {/* 그 외 경로는 홈으로 */}
       <Route path="*"           element={<Navigate to="/" replace />} />
       {/* 결제 관련 페이지 */}
