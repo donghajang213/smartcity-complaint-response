@@ -2,9 +2,11 @@ package com.universe.universe.config;
 
 import com.universe.universe.security.JwtFilter;
 import com.universe.universe.security.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -31,33 +33,43 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
+                /* ───────── 기본 보안 설정 ───────── */
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults()) // ✅ CorsConfigurationSource 사용
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(Customizer.withDefaults())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                /* ───────── 엔드포인트 권한 ───────── */
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ CORS preflight OPTIONS 요청 허용
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        // ✅ 회원가입, 로그인 관련 경로 허용
-                        .requestMatchers(
-                                "/api/signup", "/api/signup/**",
-                                "/api/login", "/api/login/**",
-                                "/api/auth/**"
-                        ).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()          // CORS 프리플라이트
+                        .requestMatchers("/api/signup/**", "/api/login/**", "/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
+
+                /* ───────── 기본 로그인/Basic 인증 끄기 ───────── */
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form.disable())
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(basic -> basic.disable())
 
+                /* ───────── 401만 내려보내기 (팝-업 차단) ───────── */
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(
+                                (req, res, e) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                        )
+                );
+
+        /* ───────── JWT 필터 삽입 ───────── */
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    /* ───────── 기타 Bean ───────── */
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 
     @Bean
@@ -65,24 +77,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ CORS 설정은 여기서 통합
+    /* ───────── CORS 통합 설정 ───────── */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",                     // 로컬 개발
-                "https://smartcityksva.site",                // 운영 도메인 (naked)
-                "https://www.smartcityksva.site",            // 운영 도메인 (www)
-                "https://smartcity-rust.vercel.app"          // Vercel 배포
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://smartcityksva.site",
+                "https://www.smartcityksva.site",
+                "https://smartcity-rust.vercel.app"
         ));
-
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // 쿠키·헤더 포함 허용
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", cfg);
         return source;
     }
 }
