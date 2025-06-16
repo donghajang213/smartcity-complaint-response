@@ -35,11 +35,12 @@ public class UserController {
     // [1] 회원가입
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> signup(@Valid @RequestBody SignupRequest request) {
+
         userService.signup(request);
         return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
     }
 
-    // [2] 일반 로그인
+    // 로그인
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
         System.out.println("로그인 시도 email: " + request.getEmail());
@@ -128,4 +129,3 @@ public class UserController {
 //        userService.approveAdmin(id);
 //        return ResponseEntity.ok(Map.of("message", "승인이 완료되었습니다."));
 //    }
-

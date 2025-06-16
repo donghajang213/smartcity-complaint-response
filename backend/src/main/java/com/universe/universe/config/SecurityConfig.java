@@ -38,17 +38,12 @@ public class SecurityConfig {
                 /* ───────── 기본 보안 설정 ───────── */
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                /* ───────── 엔드포인트 권한 ───────── */
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()          // CORS 프리플라이트
-                        .requestMatchers("/api/signup/**", "/api/login/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/signup", "/api/login", "/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-
-                /* ───────── 기본 로그인/Basic 인증 끄기 ───────── */
-                .userDetailsService(userDetailsService)
+                .userDetailsService(userDetailsService) // 추가
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -81,8 +76,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /* ───────── 기타 Bean ───────── */
-
     // ✅ AuthenticationManager 등록 방식 (Spring Security 6.1+ 권장)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
@@ -94,19 +87,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /* ───────── CORS 통합 설정 ───────── */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "https://smartcityksva.site",
-                "https://www.smartcityksva.site",
-                "https://smartcity-rust.vercel.app"
-        ));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -123,4 +103,4 @@ public class SecurityConfig {
         return source;
         }
     }   
-}
+

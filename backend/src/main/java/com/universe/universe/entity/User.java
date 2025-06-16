@@ -35,9 +35,9 @@ public class User {
     @Builder.Default
     private Role role = Role.FREE;
 
+
+
     @Column(updatable = true)
     @CreationTimestamp
     private LocalDateTime createdAt;
-
 }
-
