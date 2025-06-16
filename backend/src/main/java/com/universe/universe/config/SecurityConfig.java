@@ -33,13 +33,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(Customizer.withDefaults()) // ✅ CorsConfigurationSource 사용
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/signup", "/api/login", "/api/auth/**").permitAll()
+                        // ✅ CORS preflight OPTIONS 요청 허용
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // ✅ 회원가입, 로그인 관련 경로 허용
+                        .requestMatchers(
+                                "/api/signup", "/api/signup/**",
+                                "/api/login", "/api/login/**",
+                                "/api/auth/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .userDetailsService(userDetailsService) // 추가
+                .userDetailsService(userDetailsService)
                 .formLogin(form -> form.disable())
                 .httpBasic(Customizer.withDefaults());
 
@@ -48,7 +55,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ AuthenticationManager 등록 방식 (Spring Security 6.1+ 권장)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -59,17 +65,21 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // ✅ CORS 설정은 여기서 통합
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
+
         config.setAllowedOrigins(List.of(
-        "http://localhost:5173",                     // 로컬 개발
-        "https://smartcity-rust.vercel.app"          // Vercel 프로덕션
+                "http://localhost:5173",                     // 로컬 개발
+                "https://smartcityksva.site",                // 운영 도메인 (naked)
+                "https://www.smartcityksva.site",            // 운영 도메인 (www)
+                "https://smartcity-rust.vercel.app"          // Vercel 배포
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(true); // 쿠키·헤더 포함 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
