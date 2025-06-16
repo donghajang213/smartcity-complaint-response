@@ -21,6 +21,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -99,19 +100,27 @@ public class UserController {
     }
 
 
-    @GetMapping("/user/profile")
-    public ResponseEntity<UserProfileResponse> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
+//    @GetMapping("/user/profile")
+//    public ResponseEntity<UserProfileResponse> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        User user = userDetails.getUser();
+//        System.out.println("---------------------------------------" +userDetails);
+//
+//        return ResponseEntity.ok(
+//                new UserProfileResponse(
+//                        user.getName(),
+//                        user.getEmail(),
+//                        user.getPhone(),
+//                        user.getRole().name(),
+//                        user.getCreatedAt()
+//                )
+//        );
+//    }
 
-        return ResponseEntity.ok(
-                new UserProfileResponse(
-                        user.getName(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getRole().name()
-                )
-        );
+    @GetMapping("/users")
+    public List<UserProfileResponse> getUsers() {
+        return userService.getAllUsers();
     }
+
 }
 
 

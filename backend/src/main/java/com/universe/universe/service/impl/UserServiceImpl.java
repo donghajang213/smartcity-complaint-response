@@ -1,6 +1,7 @@
 package com.universe.universe.service.impl;
 
 import com.universe.universe.dto.SignupRequest;
+import com.universe.universe.dto.UserProfileResponse;
 import com.universe.universe.entity.Role;
 import com.universe.universe.entity.User;
 import com.universe.universe.repository.UserRepository;
@@ -9,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
@@ -50,6 +54,22 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phone);  // phone이 없으면 null 넣어도 됨
         return userRepository.save(user);
     }
+    @Override
+    public List<UserProfileResponse> getAllUsers() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return userRepository.findAll().stream()
+                .map(user -> new UserProfileResponse(
+                        user.getUserId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getPhone(),
+                        user.getRole() != null ? user.getRole().name() : null,
+                        user.getCreatedAt() != null ? user.getCreatedAt().format(formatter) : null
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 
 
