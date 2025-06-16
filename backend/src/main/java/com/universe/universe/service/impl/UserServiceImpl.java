@@ -38,6 +38,7 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
     }
+<<<<<<< HEAD
 //    @Override
 //    public User findByEmail(String email) {
 //        return userRepository.findByEmail(email).orElse(null);
@@ -50,6 +51,36 @@ public class UserServiceImpl implements UserService {
 //        user.setPhone(phone);  // phone이 없으면 null 넣어도 됨
 //        return userRepository.save(user);
 //    }
+=======
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+    @Override
+    public User registerGoogleUser(String email, String name, String phone) {
+        User user = new User();
+        user.setEmail(email);
+        user.setName(name);
+        user.setPhone(phone);  // phone이 없으면 null 넣어도 됨
+        return userRepository.save(user);
+    }
+    @Override
+    public List<UserProfileResponse> getAllUsers() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return userRepository.findAll().stream()
+                .map(user -> new UserProfileResponse(
+                        user.getUserId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getPhone(),
+                        user.getRole() != null ? user.getRole().name() : null,
+                        user.getCreatedAt() != null ? user.getCreatedAt().format(formatter) : null
+                ))
+                .collect(Collectors.toList());
+    }
+>>>>>>> parent of 5778eca ( guil backend)
+
 
 
 
