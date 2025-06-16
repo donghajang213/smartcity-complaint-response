@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class ChatRequest {
-    private String text;
+    private String message;
 }
