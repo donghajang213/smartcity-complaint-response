@@ -62,4 +62,3 @@ export const loginWithNaver = (data) => axios.post('/api/login/naver', data);
 
 // default export
 export default axios;
-
