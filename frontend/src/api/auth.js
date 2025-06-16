@@ -1,5 +1,8 @@
 // src/api/auth.js
+console.log("axios baseURL:", axios.defaults.baseURL);
 import axios from "axios";
+
+console.log("✅ BASE_URL:", import.meta.env.VITE_API_BASE_URL);
 
 // 개발환경에서만 BASE_URL 지정
 if (import.meta.env.VITE_API_BASE_URL) {
