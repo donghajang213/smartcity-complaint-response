@@ -1,7 +1,6 @@
 // src/App.jsx
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Router from "./routes/Router";
-import './index.css';
 
 export default function App() {
   return (
