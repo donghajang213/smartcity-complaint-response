@@ -38,6 +38,7 @@ public class SecurityConfig {
                 /* ───────── 기본 보안 설정 ───────── */
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
+<<<<<<< HEAD
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 /* ───────── 엔드포인트 권한 ───────── */
@@ -51,6 +52,15 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+=======
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/signup", "/api/login/**", "/api/auth/**", "/api/users").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .userDetailsService(userDetailsService) // 추가
+                .formLogin(form -> form.disable());
+>>>>>>> parent of 5778eca ( guil backend)
 
                 /* ───────── 401만 내려보내기 (팝-업 차단) ───────── */
                 .exceptionHandling(ex -> ex
@@ -65,8 +75,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+<<<<<<< HEAD
     /* ───────── 기타 Bean ───────── */
 
+=======
+    // ✅ AuthenticationManager 등록 방식 (Spring Security 6.1+ 권장)
+>>>>>>> parent of 5778eca ( guil backend)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
@@ -77,6 +91,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+<<<<<<< HEAD
     /* ───────── CORS 통합 설정 ───────── */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -90,6 +105,19 @@ public class SecurityConfig {
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
+=======
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+//        config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 주소
+        config.setAllowedOrigins(List.of(
+        "http://localhost:5173",                     // 로컬 개발
+        "https://smartcity-rust.vercel.app"          // Vercel 프로덕션
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+>>>>>>> parent of 5778eca ( guil backend)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
