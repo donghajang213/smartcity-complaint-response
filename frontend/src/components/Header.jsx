@@ -28,19 +28,10 @@ export default function Header() {
     })();
   }, [nav]);
 
-const logout = () => {
-  // 1. 앱 JWT 제거
-  localStorage.removeItem('jwt');
-
-  // 2. Google 자동 로그인 세션 해제
-  if (window.google?.accounts?.id) {
-    window.google.accounts.id.disableAutoSelect();
-  }
-
-  // 3. 로그인 페이지로 이동
-  nav('/login');
-};
-
+  const logout = () => {
+    localStorage.removeItem('jwt');
+    nav('/login');
+  };
 
   return (
     <header className="flex items-center justify-between p-4 bg-white shadow">

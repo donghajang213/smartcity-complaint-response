@@ -19,11 +19,5 @@ server:
 
 external:
   fastapi:
-    url: http://fastapi:8001/chat
-
-recaptcha:
-  secret: 6Ld1lmArAAAAAGvarEbptb3-i1gnutfvF3L2w0ub
-
-kakao:
-  rest-api-key: 8413a4aab24c3a25cc81eb161bcd7277
+    url: http://localhost:8001/chat
 

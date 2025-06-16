@@ -29,8 +29,7 @@ public class ChatController {
             ResponseEntity<ChatResponse> response = restTemplate.postForEntity(fastApiUrl, entity, ChatResponse.class);
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(new ChatResponse("FastAPI 서버 오류: " + e.getMessage()));
+            return ResponseEntity.status(500).body(new ChatResponse("FastAPI 서버 오류: " + e.getMessage()));
         }
     }
 }
