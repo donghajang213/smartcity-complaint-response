@@ -12,12 +12,11 @@ public interface UserService {
     User findByEmail(String email);
 
     User registerGoogleUser(String email, String name, String phone);
-<<<<<<< HEAD
+
 //    User findByEmail(String email);
 //
 //    User registerGoogleUser(String email, String name, String phone);
-=======
->>>>>>> parent of 5778eca ( guil backend)
+
 
 //    List<User> getPendingAdmins();
 //    void approveAdmin(Long id);
