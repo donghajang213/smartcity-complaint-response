@@ -10,9 +10,9 @@ import java.util.List;
 public interface UserService {
     void signup(SignupRequest request);
 
-    User findByEmail(String email);
-
-    User registerGoogleUser(String email, String name, String phone);
+//    User findByEmail(String email);
+//
+//    User registerGoogleUser(String email, String name, String phone);
 
     List<UserProfileResponse> getAllUsers();
 
