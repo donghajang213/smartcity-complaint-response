@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 //    @Override
 //    public User findByEmail(String email) {
 //        return userRepository.findByEmail(email).orElse(null);
@@ -52,6 +53,8 @@ public class UserServiceImpl implements UserService {
 //        return userRepository.save(user);
 //    }
 =======
+=======
+>>>>>>> parent of 5778eca ( guil backend)
     @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
@@ -80,6 +83,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 >>>>>>> parent of 5778eca ( guil backend)
+
 
 
 

@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
 <<<<<<< HEAD
+<<<<<<< HEAD
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 /* ───────── 엔드포인트 권한 ───────── */
@@ -52,6 +53,15 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+=======
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/signup", "/api/login/**", "/api/auth/**", "/api/users").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .userDetailsService(userDetailsService) // 추가
+                .formLogin(form -> form.disable());
+>>>>>>> parent of 5778eca ( guil backend)
 =======
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -76,8 +86,12 @@ public class SecurityConfig {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* ───────── 기타 Bean ───────── */
 
+=======
+    // ✅ AuthenticationManager 등록 방식 (Spring Security 6.1+ 권장)
+>>>>>>> parent of 5778eca ( guil backend)
 =======
     // ✅ AuthenticationManager 등록 방식 (Spring Security 6.1+ 권장)
 >>>>>>> parent of 5778eca ( guil backend)
@@ -91,6 +105,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     /* ───────── CORS 통합 설정 ───────── */
     @Bean
@@ -106,6 +121,8 @@ public class SecurityConfig {
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
 =======
+=======
+>>>>>>> parent of 5778eca ( guil backend)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -117,6 +134,9 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+<<<<<<< HEAD
+>>>>>>> parent of 5778eca ( guil backend)
+=======
 >>>>>>> parent of 5778eca ( guil backend)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

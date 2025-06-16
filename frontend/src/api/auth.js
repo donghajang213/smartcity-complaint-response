@@ -27,8 +27,5 @@ export const login = async (formData) => {
 };
 
 // default export
-<<<<<<< HEAD
 export default axios;
-=======
-export default axios;
->>>>>>> parent of 5778eca ( guil backend)
+

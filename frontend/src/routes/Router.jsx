@@ -6,11 +6,14 @@ import AdminPending from "../pages/AdminPending";
 import HomePage     from "../pages/HomePage";   // 비디오 히어로
 import ChatPage     from "../pages/ChatPage";   // 챗봇 메인
 <<<<<<< HEAD
+<<<<<<< HEAD
 import DashBoard     from "../pages/DashBoard"; 
 import ServerStatusDashboard     from "../pages/Server_Status_DashBoard"; 
 import UserManagementDashboard    from "../pages/User_Management_DashBoard "; 
 =======
 >>>>>>> parent of f1e1538 (Merge pull request #52 from donghajang213/feature/frontend/guil)
+=======
+>>>>>>> parent of 5778eca ( guil backend)
 
 export default function Router() {
   return (
