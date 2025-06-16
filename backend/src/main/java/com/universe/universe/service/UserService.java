@@ -12,6 +12,9 @@ public interface UserService {
     User findByEmail(String email);
 
     User registerGoogleUser(String email, String name, String phone);
+//    User findByEmail(String email);
+//
+//    User registerGoogleUser(String email, String name, String phone);
 
 //    List<User> getPendingAdmins();
 //    void approveAdmin(Long id);
