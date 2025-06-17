@@ -64,7 +64,7 @@
         const result = await login(form);
         localStorage.setItem("token", result.token);
         alert("로그인 성공!");
-        navigate("/");
+        navigate("/chatbot");
       } catch {
         alert("로그인 실패");
       } finally {

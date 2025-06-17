@@ -4,7 +4,7 @@ import { Home, Users, Settings, Wifi, LayoutDashboard } from 'lucide-react';
 import Server_Network_Status from '../components/Chart/Server_Network_Status.jsx';
 import Server_Uptime from '../components/Chart/Server_Uptime.jsx';
 
-const App = () => {
+const Server_Status_DashBoard = () => {
   const [dashboardData, setDashboardData] = useState({
     totalUsers: 1245,
     todayVisitors: 320,
@@ -134,4 +134,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Server_Status_DashBoard;

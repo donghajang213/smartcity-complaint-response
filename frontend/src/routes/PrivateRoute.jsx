@@ -12,28 +12,19 @@ function parseJwt(token) {
 }
 
 export default function PrivateRoute({ element, roles = [] }) {
-  const token = localStorage.getItem("jwt");
-  if (!token) {
-    // 로그인 안 된 상태면 로그인 페이지로
-    return <Navigate to="/login" replace />;
-  }
+  const token = localStorage.getItem("token");
+  if (!token) return <Navigate to="/login" replace />;
 
   const userInfo = parseJwt(token);
-  if (!userInfo) {
-    // 토큰 파싱 실패하면 로그인 페이지로
-    return <Navigate to="/login" replace />;
-  }
+  console.log("디코딩된 사용자 정보:", userInfo);
 
-  if (roles.length === 0) {
-    // 권한 제한 없으면 바로 접근
+  if (!userInfo) return <Navigate to="/login" replace />;
+
+  if (roles.length === 0) return element;
+
+  if (userInfo.roles.some(role => roles.includes(role))) {
     return element;
   }
 
-  if (roles.includes(userInfo.role)) {
-    // 권한 있으면 접근
-    return element;
-  }
-
-  // 권한 없으면 권한없음 페이지로 이동
   return <Navigate to="/unauthorized" replace />;
 }

@@ -5,7 +5,7 @@ import Total_users from '../components/Chart/Total_users.jsx';
 import Todays_Accessor from '../components/Chart/Todays_Accessor.jsx';
 import New_Registration from '../components/Chart/New_Registration.jsx';
 
-const App = () => {
+const DashBoard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [todayVisitors, setTodayVisitors] = useState(0); // 일단 임시로 유지
@@ -49,7 +49,7 @@ const App = () => {
           <a href="#" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
             <LayoutDashboard size={20} /> 메인 대시보드
           </a>
-          <a href="#" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <a href="/dashboard/manager" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
             <Users size={20} /> 사용자 관리
           </a>
           <a href="/dashboard/server_status" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
@@ -128,4 +128,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default DashBoard;

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Home, Users, Settings, Wifi, LayoutDashboard } from 'lucide-react';
 
-const App = () => {
+const User_Management_DashBoard  = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,4 +118,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default User_Management_DashBoard;

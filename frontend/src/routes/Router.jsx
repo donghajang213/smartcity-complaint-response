@@ -9,7 +9,7 @@ import HomePage     from "../pages/HomePage";   // 비디오 히어로
 import ChatPage     from "../pages/ChatPage";   // 챗봇 메인
 import DashBoard     from "../pages/DashBoard"; 
 import Server_Status_DashBoard     from "../pages/Server_Status_DashBoard"; 
-import User_Management_DashBoard from "../pages/User_Management_DashBoard "; 
+import User_Management_DashBoard from "../pages/User_Management_DashBoard ";
 import PrivateRoute from "./PrivateRoute";
 import Unauthorized from "../pages/Unauthorized";
 
