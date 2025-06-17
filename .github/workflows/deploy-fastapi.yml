@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - dev_final
     paths:
       - 'ai/fastapi_openapi/**'
       - 'ai/rag_pipeline/**'
