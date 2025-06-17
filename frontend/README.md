@@ -124,3 +124,5 @@ frontend/
     npm install @react-oauth/google
     npm install react-google-recaptcha
 ---    
+
+npm install lucide-react

@@ -72,17 +72,16 @@
       }
     };
 
-    // ✅ 구글 로그인 성공
     const handleGoogleSuccess = async (credentialResponse) => {
-      try {
-        const result = await loginWithGoogle({ token: credentialResponse.credential });
-        localStorage.setItem("token", result.token);
-        alert("구글 로그인 성공!");
-        navigate("/chatbot");
-      } catch {
-        alert("구글 로그인 실패");
-      }
-    };
+    try {
+      const result = await loginWithGoogle({ token: credentialResponse.credential });
+      localStorage.setItem("jwt", result.token);
+      alert("구글 로그인 성공!");
+      navigate("/chatbot");
+    } catch {
+      alert("구글 로그인 실패");
+    }
+  };
 
     // ✅ 카카오 로그인
     const handleKakaoLogin = () => {

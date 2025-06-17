@@ -12,7 +12,7 @@ function parseJwt(token) {
 }
 
 export default function PrivateRoute({ element, roles = [] }) {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token"); // ✅ 키 일치
   if (!token) return <Navigate to="/login" replace />;
 
   const userInfo = parseJwt(token);
@@ -22,7 +22,7 @@ export default function PrivateRoute({ element, roles = [] }) {
 
   if (roles.length === 0) return element;
 
-  if (userInfo.roles.some(role => roles.includes(role))) {
+  if (userInfo.roles?.some(role => roles.includes(role))) {
     return element;
   }
 
