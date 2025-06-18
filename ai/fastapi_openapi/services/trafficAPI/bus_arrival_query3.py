@@ -12,11 +12,11 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 🚏 arsID JSON 로드
-with open(os.path.join(BASE_DIR, "../data", "arsid.json"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "../../data", "arsid.json"), "r", encoding="utf-8") as f:
     station_data = json.load(f)
 
 # ✅ 통합 지하철 JSON 로드
-with open(os.path.join(BASE_DIR, "../data", "subway_station_list.json"), "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "../../data", "subway_station_list.json"), "r", encoding="utf-8") as f:
     subway_data = json.load(f)
 
 # # 🔄 방면(종착역) → 주로 탑승하는 역 매핑
@@ -107,6 +107,13 @@ def get_subway_arrival_info(station_name: str):
 
 # 🚀 질문 1건 처리 함수
 def process_question(entities_result: dict):
+    # 반환값
+    results_dict = {
+        "entity_results" : entities_result,
+        "API_results" : []
+    }
+    api_results = []
+
     realtime_entities = None
     realtime_subway_entities = None
 
@@ -129,7 +136,7 @@ def process_question(entities_result: dict):
         if ars_id:
             arrival_info = get_bus_arrival_info(ars_id, target_bus_no=bus_no)
             print(arrival_info)
-            return arrival_info
+            api_results.append(arrival_info)
         else:
             print(f"ℹ️ '{station_name}' 은(는) 버스 정류장이 아닐 수 있습니다. (arsID 없음)")
 
@@ -153,9 +160,12 @@ def process_question(entities_result: dict):
             normalized_name = normalize_subway_name(subway_station_name)
             arrival_info = get_subway_arrival_info(normalized_name)
             print(arrival_info)
-            return arrival_info
+            api_results.append(arrival_info)
         else:
             print("❌ 지하철역 엔티티가 없습니다.")
+
+    results_dict["API_results"] = api_results
+    return results_dict
 
 
 # ✅ 여러 질문 순차 처리
