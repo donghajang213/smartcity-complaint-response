@@ -17,17 +17,17 @@ with open("arsid.json", "r", encoding="utf-8") as f:
 with open("subway_station_list.json", "r", encoding="utf-8") as f:
     subway_data = json.load(f)
 
-# 🔄 방면(종착역) → 주로 탑승하는 역 매핑
-DIRECTION_TO_STATION = {
-    "관악산": "서울대벤처타운",
-    "샛강": "보라매공원",
-    # 필요하면 계속 추가
-}
+# # 🔄 방면(종착역) → 주로 탑승하는 역 매핑
+# DIRECTION_TO_STATION = {
+#     "관악산": "서울대벤처타운",
+#     "샛강": "보라매공원",
+#     # 필요하면 계속 추가
+# }
 
-def guess_station_from_direction(direction: str) -> Optional[str]:
-    """방면만 주어졌을 때 탑승 역을 추정"""
-    return DIRECTION_TO_STATION.get(direction)
-# ───────────────────────────────────────────────────────
+# def guess_station_from_direction(direction: str) -> Optional[str]:
+#     """방면만 주어졌을 때 탑승 역을 추정"""
+#     return DIRECTION_TO_STATION.get(direction)
+# # ───────────────────────────────────────────────────────
 
 # ✅ 지하철역 이름 정규화 함수
 def normalize_subway_name(name: str) -> str:
@@ -143,18 +143,18 @@ def process_question(question: str):
     # 🚇 지하철 도착 처리
     if realtime_subway_entities:
         subway_station_name = None
-        direction_name = None           # ① 방면 변수 추가
+        # direction_name = None           # ① 방면 변수 추가
 
         for entity in realtime_subway_entities:
             if entity["type"] == "지하철역":
                 subway_station_name = entity["value"]
                 break
-            elif entity["type"] == "방면":      # ② 방면도 저장
-                direction_name = entity["value"]
+            # elif entity["type"] == "방향":      # ② 방면도 저장
+            #     direction_name = entity["value"]
 
-        # ③ 지하철역이 없고 방면만 있을 때 → 매핑으로 추정
-        if not subway_station_name and direction_name:
-            subway_station_name = guess_station_from_direction(direction_name)
+        # # ③ 지하철역이 없고 방면만 있을 때 → 매핑으로 추정
+        # if not subway_station_name and direction_name:
+        #     subway_station_name = guess_station_from_direction(direction_name)
 
         if subway_station_name:
             normalized_name = normalize_subway_name(subway_station_name)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         # "노량진역에서 버스 언제 와?",
         # "서울대벤처타운 상행 언제 와?",
         # "서울역에서 홍대입구까지 가는 길을 알려줘",
-        "관악산 방면 열차 몇 분 남았어?"
+        "관악산에서 출발하는 방향 열차 몇 분 남았어?"
         # "서울대벤처타운 상행 언제 와?"
     ]
 
