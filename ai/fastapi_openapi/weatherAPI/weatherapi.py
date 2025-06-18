@@ -2,6 +2,11 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -49,7 +54,7 @@ def weather(region):
     # 초단기예보 API 호출
     url = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
     params = {
-        'serviceKey': 'vlFqNOMGHQuVJ6GoaP8C99d89CrkizjL/eMTJtgiLYQVr9Sbmo0CKfDHKR/6WhBptBwMDguCzQQxFMZHhKxSCw==',  # 발급받은 인증키 사용
+        'serviceKey': WEATHER_API_KEY,  # 발급받은 인증키 사용
         'pageNo': '1',
         'numOfRows': '1000',
         'dataType': 'JSON',
