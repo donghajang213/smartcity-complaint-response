@@ -1,6 +1,6 @@
-from IntentEntity import ExtractEntities
-from trafficAPI import process_question
-from weather_call2 import call_weather_api_from_entities
+from .IntentEntity import ExtractEntities
+from .trafficAPI import process_question
+from .weather_call2 import call_weather_api_from_entities
 
 from dotenv import load_dotenv
 import os

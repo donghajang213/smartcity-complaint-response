@@ -2,7 +2,7 @@ import os
 import json
 import requests
 import xmltodict
-from IntentEntity import ExtractEntities
+from ..IntentEntity import ExtractEntities
 from dotenv import load_dotenv
 import time
 from typing import Optional

@@ -1,7 +1,7 @@
-from IntentEntity import ExtractEntities
-from weatherAPI import weather
+from .IntentEntity import ExtractEntities
+from .weatherAPI import weather
+from .dustAPI import get_air_quality
 from dotenv import load_dotenv
-from dustAPI import get_air_quality  # 미세먼지 API 함수 import
 import os
 
 load_dotenv()
