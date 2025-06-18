@@ -77,6 +77,13 @@ dust_entity_map = {
 }
 
 def call_weather_api_from_entities(entities_result: dict):
+    # 반환값
+    results_dict = {
+        "entity_results" : entities_result,
+        "API_results" : []
+    }
+    api_results = []
+
     # 공통 지역 추출
     all_entities = [e for e in entities_result["entities"]]
     common_region = next((e["value"] for e in all_entities if e.get("type") == "지역"), None)
@@ -100,6 +107,7 @@ def call_weather_api_from_entities(entities_result: dict):
         dust_requests.append((region, requested_types))
     else:
         print(f"⚠️ '{intent}'에 대한 API 연결은 아직 구현되지 않았습니다.")
+        return 0
 
     # 날씨 데이터 호출 및 출력 (중복 지역은 하나로 합칠 수도 있음)
     for region, requested_types in weather_requests:
@@ -127,6 +135,8 @@ def call_weather_api_from_entities(entities_result: dict):
         else:
             print("🔍 전체 날씨 항목:")
             print(df_weather[['category_ko', 'fcstTime', 'fcstValue']])
+            api_results.append(df_weather[['category_ko', 'fcstTime', 'fcstValue']].to_dict(orient='records'))
+            return results_dict
 
     # 미세먼지 데이터 호출 및 출력
     for region, requested_types in dust_requests:
@@ -144,11 +154,21 @@ def call_weather_api_from_entities(entities_result: dict):
                 if column and column in df_dust.columns:
                     for _, row in df_dust.iterrows():
                         print(f"{row['stationName']} 기준 {rt} 수치: {row[column]} ㎍/㎥ (측정시각: {row['dataTime']})")
+                        api_results.append(
+                            {
+                                "local" : row['stationName'],
+                                "dust_type" : rt,
+                                "dust_value" : row[column],
+                                "dataTime" : row['dataTime']
+                            }
+                        )
                 else:
                     print(f"⚠️ 요청한 항목 '{rt}'에 대한 데이터가 없습니다.")
         else:
             print(df_dust[['stationName', 'pm10Value', 'pm25Value', 'dataTime']])
 
+    results_dict["API_results"] = api_results
+    return results_dict
 
 
 if __name__=="__main__":
