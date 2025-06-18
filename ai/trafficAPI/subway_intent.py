@@ -7,7 +7,7 @@ class FindingWayEntity(BaseModel):
     value: str
 
 # ✅ 실시간 버스 도착 정보용 엔티티
-class RealtimeArrivalEntity(BaseModel):
+class RealtimeBusEntity(BaseModel):
     type: Literal["정류장", "노선"]
     value: str
 
