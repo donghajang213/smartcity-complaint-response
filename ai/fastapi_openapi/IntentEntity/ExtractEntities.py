@@ -21,9 +21,10 @@ class ExtractEntities:
         }
         self.traffic_intent_map = {
             "길찾기": FindingWayEntity,
-            "실시간 도착 정보": RealtimeBusEntity,
+            "실시간 버스 도착 정보": RealtimeBusEntity,
+            "실시간 지하철 도착 정보": RealtimeSubwayEntity
         }
-        self.environment_intent_map = { 
+        self.environment_intent_map = {
             "미세먼지": DustEntity
         }
         self.weather_intent_map = {

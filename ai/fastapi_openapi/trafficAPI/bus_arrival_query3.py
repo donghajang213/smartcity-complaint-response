@@ -5,6 +5,7 @@ import xmltodict
 from IntentEntity import ExtractEntities
 from dotenv import load_dotenv
 import time
+from typing import Optional
 
 load_dotenv()
 
@@ -18,11 +19,22 @@ with open(os.path.join(BASE_DIR, "../data", "arsid.json"), "r", encoding="utf-8"
 with open(os.path.join(BASE_DIR, "../data", "subway_station_list.json"), "r", encoding="utf-8") as f:
     subway_data = json.load(f)
 
+# # 🔄 방면(종착역) → 주로 탑승하는 역 매핑
+# DIRECTION_TO_STATION = {
+#     "관악산": "서울대벤처타운",
+#     "샛강": "보라매공원",
+#     # 필요하면 계속 추가
+# }
+
+# def guess_station_from_direction(direction: str) -> Optional[str]:
+#     """방면만 주어졌을 때 탑승 역을 추정"""
+#     return DIRECTION_TO_STATION.get(direction)
+# # ───────────────────────────────────────────────────────
 
 # ✅ 지하철역 이름 정규화 함수
 def normalize_subway_name(name: str) -> str:
     for row in subway_data:
-        station_name = row.get("station_name")  # ✅ 여기 수정
+        station_name = row.get("station_name")
         if not station_name:
             continue
         if name in station_name or station_name in name:
@@ -95,13 +107,10 @@ def get_subway_arrival_info(station_name: str):
 
 # 🚀 질문 1건 처리 함수
 def process_question(entities_result: dict):
-
-    # print(json.dumps(entities_result, ensure_ascii=False, indent=2))
-
     realtime_entities = None
     realtime_subway_entities = None
 
-    if entities_result["intent"] == "실시간 도착 정보":
+    if entities_result["intent"] == "실시간 버스 도착 정보":
         realtime_entities = entities_result["entities"]
     elif entities_result["intent"] == "실시간 지하철 도착 정보":
         realtime_subway_entities = entities_result["entities"]
@@ -127,10 +136,18 @@ def process_question(entities_result: dict):
     # 🚇 지하철 도착 처리
     if realtime_subway_entities:
         subway_station_name = None
+        # direction_name = None           # ① 방면 변수 추가
+
         for entity in realtime_subway_entities:
             if entity["type"] == "지하철역":
                 subway_station_name = entity["value"]
                 break
+            # elif entity["type"] == "방향":      # ② 방면도 저장
+            #     direction_name = entity["value"]
+
+        # # ③ 지하철역이 없고 방면만 있을 때 → 매핑으로 추정
+        # if not subway_station_name and direction_name:
+        #     subway_station_name = guess_station_from_direction(direction_name)
 
         if subway_station_name:
             normalized_name = normalize_subway_name(subway_station_name)
