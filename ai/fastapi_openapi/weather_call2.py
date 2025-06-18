@@ -84,25 +84,22 @@ def call_weather_api_from_entities(entities_result: dict):
     # 날씨 관련 요청들 모으기
     weather_requests = []
     dust_requests = []
+    print(entities_result)
+    intent = entities_result["intent"]
+    entities = entities_result["entities"]
+    region = next((e["value"] for e in entities if e.get("type") == "지역"), common_region)
+    if not region:
+        print(f"❌ '{intent}' 관련 API 호출에 필요한 지역 정보가 없어 조회할 수 없습니다.")
+        return 0
     
-    for result in entities_result:
-        print(result)
-        print(type(result))
-        intent = result["intent"]
-        entities = result["entities"]
-        region = next((e["value"] for e in entities if e.get("type") == "지역"), common_region)
-        if not region:
-            print(f"❌ '{intent}' 관련 API 호출에 필요한 지역 정보가 없어 조회할 수 없습니다.")
-            continue
-        
-        requested_types = list({e.get("type") for e in entities if e.get("type") != "지역" and e.get("type")})
-        
-        if intent == "날씨":
-            weather_requests.append((region, requested_types))
-        elif intent == "미세먼지":
-            dust_requests.append((region, requested_types))
-        else:
-            print(f"⚠️ '{intent}'에 대한 API 연결은 아직 구현되지 않았습니다.")
+    requested_types = list({e.get("type") for e in entities if e.get("type") != "지역" and e.get("type")})
+    
+    if intent == "날씨":
+        weather_requests.append((region, requested_types))
+    elif intent == "미세먼지":
+        dust_requests.append((region, requested_types))
+    else:
+        print(f"⚠️ '{intent}'에 대한 API 연결은 아직 구현되지 않았습니다.")
 
     # 날씨 데이터 호출 및 출력 (중복 지역은 하나로 합칠 수도 있음)
     for region, requested_types in weather_requests:

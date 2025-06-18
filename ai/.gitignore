@@ -1,0 +1,8 @@
+# 환경파일
+.env
+
+# cache
+__pycache__
+
+# OS
+.DS_Store
