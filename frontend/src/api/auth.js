@@ -1,6 +1,6 @@
 // src/api/auth.js
-console.log("axios baseURL:", axios.defaults.baseURL);
 import axios from "axios";
+console.log("axios baseURL:", axios.defaults.baseURL);
 
 console.log("✅ BASE_URL:", import.meta.env.VITE_API_BASE_URL);
 
