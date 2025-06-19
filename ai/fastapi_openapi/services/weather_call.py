@@ -1,7 +1,7 @@
-from ExtractEntities2 import ExtractEntities
-from weahterapi.weatherapi import weather
+from IntentEntity import ExtractEntities
+from weatherAPI import weather
 from dotenv import load_dotenv
-from dustapi.dustapi import get_air_quality  # 미세먼지 API 함수 import
+from dustAPI import get_air_quality  # 미세먼지 API 함수 import
 import os
 
 load_dotenv()
@@ -76,16 +76,18 @@ dust_entity_map = {
     "초미세먼지": "pm25Value"
 }
 
-def call_weather_api_from_entities(question_result: dict):
+def call_weather_api_from_entities(entities_result: dict):
     # 공통 지역 추출
-    all_entities = [e for r in question_result["results"] for e in r["entities"]]
+    all_entities = [e for e in entities_result["entities"]]
     common_region = next((e["value"] for e in all_entities if e.get("type") == "지역"), None)
 
     # 날씨 관련 요청들 모으기
     weather_requests = []
     dust_requests = []
     
-    for result in question_result["results"]:
+    for result in entities_result:
+        print(result)
+        print(type(result))
         intent = result["intent"]
         entities = result["entities"]
         region = next((e["value"] for e in entities if e.get("type") == "지역"), common_region)

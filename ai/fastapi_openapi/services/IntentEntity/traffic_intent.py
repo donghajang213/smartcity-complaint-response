@@ -1,5 +1,5 @@
-from pydantic import BaseModel, root_validator
-from typing import List, Union, Literal
+from pydantic import BaseModel
+from typing import Literal
 
 # ✅ 길찾기용 엔티티
 class FindingWayEntity(BaseModel):
@@ -18,4 +18,4 @@ class RealtimeSubwayEntity(BaseModel):
 
 # ✅ Intent 모델 통합
 class TrafficIntent(BaseModel):
-    intent: Literal["길찾기", "실시간 도착 정보", "실시간 지하철 도착 정보"]
+    intent: Literal["길찾기", "실시간 버스 도착 정보", "실시간 지하철 도착 정보"]
