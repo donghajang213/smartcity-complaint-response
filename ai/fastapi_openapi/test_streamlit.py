@@ -16,12 +16,21 @@ if st.button("질문하기") and user_input:
         try:
             res = requests.post(
                 BACKEND_URL,
-                json={"message": user_input}
+                json = {"message": user_input}
             )
 
             if res.status_code == 200:
                 data = res.json()
-                st.success(f"💬 응답: {data['answer']}")
+                api_results = []
+                for result in data["results"]:
+                    for api_result in result["API_results"]:
+                        if type(api_result) == list:
+                            api_results.append('\n\n'.join(api_result))
+                        else:
+                            api_results.append(api_result)
+                api_results[0] = api_results[0].replace('\n', '\n\n')
+                api_results = '\n\n'.join(str(x) for x in api_results)
+                st.success(f"💬\n\n{api_results}")
             else:
                 st.error(f"❌ 서버 오류: {res.status_code}")
 
