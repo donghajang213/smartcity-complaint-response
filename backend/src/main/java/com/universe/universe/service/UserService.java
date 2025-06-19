@@ -1,13 +1,14 @@
 package com.universe.universe.service;
 
 import com.universe.universe.dto.SignupRequest;
-import com.universe.universe.entity.User;
-import org.springframework.web.client.RestTemplate;
+import com.universe.universe.dto.User;
 
 import java.util.List;
 
 public interface UserService {
     void signup(SignupRequest request);
+
+    List<User> getAllUsers();
 
 //    User findByEmail(String email);
 //

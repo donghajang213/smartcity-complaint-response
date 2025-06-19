@@ -27,20 +27,29 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        // ✅ 회원가입/로그인 요청은 필터 건너뜀
-        if (uri.equals("/api/signup") || uri.equals("/api/login")) {
+        // ✅ 인증 없이 통과시킬 URL 추가
+        if (uri.equals("/api/signup")
+                || uri.equals("/api/login")
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/swagger-ui")
+                || uri.equals("/api/auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = resolveToken(request);
-        if (token != null && jwtUtil.validateToken(token)) {
-            String email = jwtUtil.validateTokenAndGetEmail(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+        if (token != null) {
+            if (jwtUtil.validateToken(token)) {
+                String email = jwtUtil.validateTokenAndGetEmail(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -54,4 +63,3 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 }
-
