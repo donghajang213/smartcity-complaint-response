@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - dev_final
+      - dev_test
     paths:
       - 'ai/fastapi_openapi/**'
       - 'ai/rag_pipeline/**'
