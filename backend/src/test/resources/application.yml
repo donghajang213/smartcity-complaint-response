@@ -1,9 +1,18 @@
 spring:
+  mvc:
+    cors:
+      enabled: false     # ← 이 설정을 추가하세요. Spring MVC가 CORS 헤더를 붙이지 않습니다.
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
   datasource:
     url: jdbc:postgresql://localhost:5432/smartcity_db
     username: user
     password: password
-    driver-class-name: org.postgresql.Driver   # ← 드라이버 클래스 명시
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -12,7 +21,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect   # ← 방언 추가
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8080
@@ -34,15 +43,7 @@ management:
         include: health,info,metrics
 
 ad:
-  # AD_UPLOAD_DIR 환경 변수가 없으면 /app/uploads/ads 로,
-  # 있으면 그 값을 사용합니다.
+  # 환경변수가 없으면 /app/uploads/ads, 있으면 AD_UPLOAD_DIR 값 사용
   upload-dir: ${AD_UPLOAD_DIR:/app/uploads/ads}
-
-  # AD_BASE_URL 환경 변수가 없으면 아래 URL을,
-  # 있으면 그 값을 사용합니다.
+  # 환경변수가 없으면 https://smartcityksva.site/api/ads, 있으면 AD_BASE_URL 값 사용
   base-url:   ${AD_BASE_URL:https://smartcityksva.site/api/ads}
-
-servlet:
-  multipart:
-    max-file-size: 20MB
-    max-request-size: 20MB
