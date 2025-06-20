@@ -14,7 +14,7 @@ export default function AdBanner({
   const [ads, setAds] = useState([]);
   const [current, setCurrent] = useState(0);
 
-  /* 1) 광고 목록 불러오기  --------------------------------------------------- */
+  /* 1) 광고 목록 불러오기 --------------------------------------------------- */
   useEffect(() => {
     async function loadAds() {
       try {
@@ -29,7 +29,7 @@ export default function AdBanner({
     if (position) loadAds();
   }, [position, limit]);
 
-  /* 2) 자동 슬라이드  -------------------------------------------------------- */
+  /* 2) 자동 슬라이드 -------------------------------------------------------- */
   useEffect(() => {
     if (ads.length <= 1) return;          // 광고가 1개면 자동 넘김 X
     const id = setInterval(
@@ -39,7 +39,7 @@ export default function AdBanner({
     return () => clearInterval(id);
   }, [ads, interval]);
 
-  /* 3) 로딩 중 화면  --------------------------------------------------------- */
+  /* 3) 로딩 중 화면 --------------------------------------------------------- */
   if (ads.length === 0) {
     return (
       <div className="p-2 text-center text-gray-500">
@@ -48,8 +48,9 @@ export default function AdBanner({
     );
   }
 
-  /* 4) 실제 광고 표시  -------------------------------------------------------- */
+  /* 4) 실제 광고 표시 -------------------------------------------------------- */
   const { id, imageUrl, linkUrl, altText } = ads[current];
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(imageUrl);
 
   const handleClick = () => {
     // 실패해도 UI 멈추지 않도록 catch만
@@ -64,11 +65,19 @@ export default function AdBanner({
         rel="noopener noreferrer"
         onClick={handleClick}
       >
-        <img
-          src={imageUrl}
-          alt={altText || '광고'}
-          className="max-h-48 object-contain"
-        />
+        {isVideo ? (
+          <video
+            src={imageUrl}
+            controls
+            className="max-h-48 object-contain"
+          />
+        ) : (
+          <img
+            src={imageUrl}
+            alt={altText || '광고'}
+            className="max-h-48 object-contain"
+          />
+        )}
       </a>
     </div>
   );
