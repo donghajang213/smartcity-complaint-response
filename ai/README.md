@@ -1,5 +1,13 @@
 ### 1. 가상환경 만들기
-### 2. pip install fastapi uvicorn
-### 3. pip install requests
-### 4. pip install transformers
-### 5. pip install xmltodict
+### 2. 라이브러리 설치
+```bash
+pip install fastapi uvicorn
+pip install requests
+pip install transformers
+pip install xmltodict
+pip install python-dotenv
+# gemini
+pip install -q -U google-genai
+```
+
+### 3. `.env`에 API_KEY(GEMINI_API_KEY, TRAFFIC_API_KEY) 등록

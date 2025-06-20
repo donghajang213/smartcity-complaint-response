@@ -1,7 +1,7 @@
 // src/pages/UserManagementPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/auth.js';
 import { Users, Wifi, LayoutDashboard } from 'lucide-react';
 
 function UserManagementPage() {

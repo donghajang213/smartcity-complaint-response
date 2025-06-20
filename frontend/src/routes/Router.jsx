@@ -15,6 +15,7 @@ import UserManagementPage from "../pages/UserManagementPage";
 import { CheckoutPage } from "../pages/pay/CheckoutPage";
 import { SuccessPage } from "../pages/pay/SuccessPage";
 import { FailPage } from "../pages/pay/FailPage";
+import AdminSettings from "../pages/AdminSettings";
 
 export default function Router() {
   return (
@@ -33,8 +34,9 @@ export default function Router() {
       {/* 관리 페이지 */}
       <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/dashboard/server_status" element={<ServerStatusPage />} />
+      <Route path="/admin/dashboard/serverstatus" element={<ServerStatusPage />} />
       <Route path="/admin/dashboard/users" element={<UserManagementPage />} />
+      <Route path="/admin/dashboard/settings" element={<AdminSettings />} />
 
       {/* 그 외 경로는 홈으로 */}
       <Route path="*"           element={<Navigate to="/" replace />} />
