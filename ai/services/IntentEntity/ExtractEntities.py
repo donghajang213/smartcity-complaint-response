@@ -20,7 +20,8 @@ class ExtractEntities:
             "날씨": WeatherIntent,
             "행정": AdministrativeIntent,
             "시설": FacilityIntent,
-            "정책": PolicyIntent
+            "정책": PolicyIntent,
+            "일상 대화": None
         }
         self.traffic_intent_map = {
             "길찾기": FindingWayEntity,
@@ -44,7 +45,8 @@ class ExtractEntities:
             "날씨": self.weather_intent_map,
             "행정": self.common_intent_map,
             "시설": self.common_intent_map,
-            "정책": self.common_intent_map
+            "정책": self.common_intent_map,
+            "일상 대화": None
         }
     
     def call_gemini_api(self, prompt: str, response_schema) -> str:
@@ -59,25 +61,31 @@ class ExtractEntities:
         
         return json.loads(response.text)
 
-    def extract_category(self, question: str) -> str:
+    def extract_category(self, question: str) -> list:
         prompt = textwrap.dedent(f"""
-        다음 문장을 보고, 질문이 ['교통', 환경', '날씨', '행정', '시설', '정책'] 중에 어떤 관련인지 JSON으로 알려주세요.
-
+        다음 문장을 보고, 질문이 ['교통', 환경', '날씨', '행정', '시설', '정책', '일상 대화'] 중에 어떤 관련인지 JSON으로 알려주세요.
+        (미세먼지 수치 질문의 경우 '환경'으로 분류해주세요.)
+        
         문장: "{question}"
 
         """)
 
         response = self.call_gemini_api(prompt=prompt, response_schema=list[APICategory])
+        for res in response:
+            if res["category"] == "일상 대화" and len(response) > 1:
+                response.remove({"category": "일상 대화"})
         return response
 
-    def extract_intents(self, question: str, categories: list) -> str:
+    def extract_intents(self, question: str, categories: list) -> list:
         intent_list = []
         for category in categories:
             category = category["category"]
 
             if category not in self.category_map.keys():
                 raise ValueError(f"지원하지 않는 카테고리: {category}. 지원되는 카테고리: {self.category_map.keys()}")
-        
+            if category == "일상 대화" and len(categories) == 1:
+                return [[{'intent': '일상 대화'}]]
+
             # 가능한 intent 리스트 추출
             valid_intents = set(self.category_to_intent_map[category].keys())
             
@@ -97,24 +105,30 @@ class ExtractEntities:
                 if intent_value in valid_intents and intent_value not in seen:
                     seen.add(intent_value)
                     filtered.append(item)
-
-            print(f"{category} 의도 추출 결과: {filtered}")
             intent_list.append(filtered)
-
         return intent_list
     
     def extract_entities(self, question: str, categories: list, intents_list: list) -> list:
         result_list = []
+        # 그저 일상 대화일 때 OpenAPI 사용하지 않으므로 엔티티 추출하지 않고 바로 반환
+        if categories[0]["category"] == "일상 대화":
+            question_result = {
+                "question": question,
+                "results": [{
+                    "category": "일상 대화",
+                    "intent": "일상 대화"
+                }]
+            }
+            return question_result
+            
         for category, intents in zip(categories, intents_list):
             category = category["category"]
-            print(f"category: {category}")
             intent_map = self.category_to_intent_map[category]
-            print(f"intent_map keys: {list(intent_map.keys())}")
             for intent in intents:
                 intent = intent["intent"]
-                print(f"intent: {intent}")
                 if intent not in intent_map.keys():
                     raise ValueError(f"지원하지 않는 의도: {intent}. 지원되는 의도: {intent_map.keys()}")
+                # 민원 요청하는 질문일 때 OpenAPI 사용하지 않으므로 엔티티 필요 없음
                 if intent == "민원 요청":
                     result = {
                         "category": category,
@@ -129,6 +143,7 @@ class ExtractEntities:
                 문장: {question}
 
                 """)
+                # 엔티티 추출
                 response = self.call_gemini_api(prompt=prompt, response_schema=list[intent_map[intent]])
                 result = {
                     "category": category,

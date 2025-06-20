@@ -34,6 +34,12 @@ def smartcity_question_handler(question: str):
         "results" : []
     }
     rag_answer = None
+
+    if entities["results"][0]["category"] == "일상 대화":
+        answer = llm.invoke(question)
+        results_dict["results"] = {
+            "answer": answer
+        }
     with ThreadPoolExecutor() as executor:
         futures = []
         for ent_result in entities["results"]:

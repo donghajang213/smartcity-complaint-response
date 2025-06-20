@@ -63,8 +63,8 @@ class SmartCityRAGResponder:
         else:
             return {
                 "answer": answer,
-                "sources": {
+                "sources": [{
                     "content": top_doc.page_content,
                     "metadata": top_doc.metadata
-                }
+                }]
             }
