@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -104,6 +106,7 @@ public class SecurityConfig {
     @Bean
     @ConditionalOnWebApplication(type = Type.SERVLET)
     @ConditionalOnMissingBean(name = "corsFilterRegistration")
+    @Profile("!test")
     public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
         CorsFilter filter = new CorsFilter(source);
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
