@@ -94,21 +94,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of(
-                "http://localhost:5173",                     // 로컬 개발
-                "https://smartcityksva.site",                // 운영 도메인 (naked)
-                "https://www.smartcityksva.site",            // 운영 도메인 (www)
-                "https://smartcity-rust.vercel.app"          // Vercel 배포
+                "http://localhost:5173",
+                "https://smartcityksva.site",
+                "https://www.smartcityksva.site",
+                "https://smartcity-rust.vercel.app"
         ));
-
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // 쿠키·헤더 포함 허용
+        config.setExposedHeaders(List.of("Authorization"));      // ← 여기 추가
+        config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", config);
+        return src;
     }
 }
