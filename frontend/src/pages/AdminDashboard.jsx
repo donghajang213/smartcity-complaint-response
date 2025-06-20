@@ -1,7 +1,7 @@
 // src/pages/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/auth.js';
 import { Home, Users, Settings, Wifi, LayoutDashboard } from 'lucide-react';
 import TotalUsersChart from '../components/chart/TotalUsers.jsx';
 import TodaysAccessorChart from '../components/chart/TodaysAccessor.jsx';
@@ -40,7 +40,7 @@ function AdminDashboard() {
           <button onClick={() => navigate('/admin/dashboard/settings')} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
             <Settings size={20} /> 설정
           </button>
-          <button onClick={() => navigate('/chatbot')} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <button onClick={() => navigate('/main')} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
             <Home size={20} /> 홈
           </button>
         </nav>
