@@ -1,0 +1,549 @@
+e else self.config.use_return_dict
+
+        if labels is not None and decoder_input_ids is None and decoder_inputs_embeds is None:
+            # get decoder inputs from shifting lm labels to the right
+            decoder_input_ids = self._shift_right(labels)
+
+        outputs = self.prophetnet(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            decoder_input_ids=decoder_input_ids,
+            decoder_attention_mask=decoder_attention_mask,
+            head_mask=head_mask,
+            decoder_head_mask=decoder_head_mask,
+            cross_attn_head_mask=cross_attn_head_mask,
+            encoder_outputs=encoder_outputs,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            decoder_inputs_embeds=decoder_inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        batch_size, sequence_length = (
+            decoder_input_ids.shape if decoder_input_ids is not None else decoder_inputs_embeds.shape[:2]
+        )
+
+        predicting_streams = outputs[1].view(batch_size, self.config.ngram, sequence_length, -1)
+        predict_logits = self.lm_head(predicting_streams)
+
+        logits = predict_logits[:, 0]
+        logits_ngram = predict_logits[:, 1:] if self.config.ngram > 1 else None
+
+        # To use .view in loss computation, make sure that logits is contiguous.
+        if not logits.is_contiguous():
+            logits = logits.contiguous()
+
+        loss = None
+        if labels is not None:
+            loss = self._compute_loss(predict_logits, labels)
+
+        if not return_dict:
+            all_logits = tuple(v for v in [logits, logits_ngram] if v is not None)
+            return (loss,) + all_logits + outputs[2:] if loss is not None else all_logits + outputs[2:]
+        else:
+            return XLMProphetNetSeq2SeqLMOutput(
+                loss=loss,
+                logits=logits,
+                logits_ngram=logits_ngram,
+                past_key_values=outputs.past_key_values,
+                decoder_hidden_states=outputs.decoder_hidden_states,
+                decoder_ngram_hidden_states=outputs.decoder_ngram_hidden_states,
+                decoder_attentions=outputs.decoder_attentions,
+                decoder_ngram_attentions=outputs.decoder_ngram_attentions,
+                cross_attentions=outputs.cross_attentions,
+                encoder_last_hidden_state=outputs.encoder_last_hidden_state,
+                encoder_hidden_states=outputs.encoder_hidden_states,
+                encoder_attentions=outputs.encoder_attentions,
+            )
+
+    def _compute_loss(self, logits, labels, ignore_index=-100):
+        expend_targets = labels.new_zeros(self.config.ngram, labels.size(0), labels.size(1)).fill_(ignore_index)
+
+        for i in range(self.config.ngram):
+            if i > 0 and self.disable_ngram_loss:
+                break
+            expend_targets[i, :, :] = labels
+
+        logits = logits.transpose(0, 1).contiguous()
+        lprobs = nn.functional.log_softmax(
+            logits.view(-1, logits.size(-1)),
+            dim=-1,
+            dtype=torch.float32,
+        )
+
+        loss = nn.functional.nll_loss(lprobs, expend_targets.view(-1), reduction="mean")
+
+        if self.config.eps > 0.0:
+            smooth_loss = -lprobs.sum(dim=-1, keepdim=True)
+            non_masked_tokens = expend_targets.ne(ignore_index).view(-1)
+            smooth_loss = smooth_loss[non_masked_tokens]
+            smooth_loss = smooth_loss.mean()
+
+            eps_i = self.config.eps / lprobs.size(-1)
+            loss = (1.0 - self.config.eps) * loss + eps_i * smooth_loss
+
+        return loss
+
+    def prepare_inputs_for_generation(
+        self,
+        decoder_input_ids,
+        past_key_values=None,
+        attention_mask=None,
+        head_mask=None,
+        decoder_head_mask=None,
+        cross_attn_head_mask=None,
+        use_cache=None,
+        encoder_outputs=None,
+        **kwargs,
+    ):
+        assert encoder_outputs is not None, "`encoder_outputs` have to be passed for generation."
+
+        if past_key_values:
+            decoder_input_ids = decoder_input_ids[:, -1:]
+        # first step, decoder_cached_states are empty
+        return {
+            "input_ids": None,  # encoder_outputs is defined. input_ids not needed
+            "encoder_outputs": encoder_outputs,
+            "past_key_values": past_key_values,
+            "decoder_input_ids": decoder_input_ids,
+            "attention_mask": attention_mask,
+            "head_mask": head_mask,
+            "decoder_head_mask": decoder_head_mask,
+            "cross_attn_head_mask": cross_attn_head_mask,
+            "use_cache": use_cache,
+        }
+
+    def prepare_decoder_input_ids_from_labels(self, labels: torch.Tensor):
+        return self._shift_right(labels)
+
+    @staticmethod
+    def _reorder_cache(past_key_values, beam_idx):
+        reordered_past = ()
+        for layer_past in past_key_values:
+            # cached cross_attention states don't have to be reordered -> they are always the same
+            reordered_past += (
+                tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past[:2])
+                + layer_past[2:],
+            )
+        return reordered_past
+
+    def get_encoder(self):
+        return self.prophetnet.encoder
+
+    def get_decoder(self):
+        return self.prophetnet.decoder
+
+
+@add_start_docstrings(
+    "The standalone decoder part of the XLMProphetNetModel with a lm head on top. The model can be used for causal"
+    " language modeling.",
+    XLM_PROPHETNET_START_DOCSTRING,
+)
+class XLMProphetNetForCausalLM(XLMProphetNetPreTrainedModel):
+    _tied_weights_keys = [
+        "prophetnet.word_embeddings.weight",
+        "prophetnet.decoder.word_embeddings.weight",
+        "lm_head.weight",
+    ]
+
+    def __init__(self, config: XLMProphetNetConfig):
+        # set config for CLM
+        config = copy.deepcopy(config)
+        config.is_decoder = True
+        config.is_encoder_decoder = False
+        super().__init__(config)
+        self.prophetnet = XLMProphetNetDecoderWrapper(config)
+
+        self.padding_idx = config.pad_token_id
+        self.disable_ngram_loss = config.disable_ngram_loss
+
+        self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def get_input_embeddings(self):
+        return self.prophetnet.decoder.word_embeddings
+
+    def set_input_embeddings(self, value):
+        self.prophetnet.decoder.word_embeddings = value
+
+    def get_output_embeddings(self):
+        return self.lm_head
+
+    def set_output_embeddings(self, new_embeddings):
+        self.lm_head = new_embeddings
+
+    def _tie_weights(self):
+        if self.config.tie_word_embeddings:
+            self._tie_or_clone_weights(self.prophetnet.decoder.word_embeddings, self.lm_head)
+
+    def set_decoder(self, decoder):
+        self.prophetnet.decoder = decoder
+
+    def get_decoder(self):
+        return self.prophetnet.decoder
+
+    @add_start_docstrings_to_model_forward(XLM_PROPHETNET_STANDALONE_INPUTS_DOCSTRING)
+    @replace_return_docstrings(output_type=XLMProphetNetDecoderLMOutput, config_class=_CONFIG_FOR_DOC)
+    def forward(
+        self,
+        input_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        encoder_hidden_states: Optional[torch.Tensor] = None,
+        encoder_attention_mask: Optional[torch.Tensor] = None,
+        head_mask: Optional[torch.Tensor] = None,
+        cross_attn_head_mask: Optional[torch.Tensor] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor]]] = None,
+        inputs_embeds: Optional[torch.Tensor] = None,
+        labels: Optional[torch.Tensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, XLMProphetNetDecoderLMOutput]:
+        r"""
+        encoder_hidden_states (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
+            Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
+            the model is configured as a decoder.
+        encoder_attention_mask (`torch.FloatTensor` of shape `(batch_size, sequence_length)`, *optional*):
+            Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in
+            the cross-attention if the model is configured as a decoder. Mask values selected in `[0, 1]`:
+        cross_attn_head_mask (`torch.Tensor` of shape `(decoder_layers, decoder_attention_heads)`, *optional*):
+            Mask to nullify selected heads of the cross-attention modules. Mask values selected in `[0, 1]`:
+
+            - 1 indicates the head is **not masked**,
+            - 0 indicates the head is **masked**.
+
+        past_key_values (`tuple(tuple(torch.FloatTensor))` of length `config.n_layers` with each tuple having 4 tensors of shape `(batch_size, num_heads, sequence_length - 1, embed_size_per_head)`):
+            Contains precomputed key and value hidden-states of the attention blocks. Can be used to speed up decoding.
+
+            If `past_key_values` are used, the user can optionally input only the last `decoder_input_ids` (those that
+            don't have their past key value states given to this model) of shape `(batch_size, 1)` instead of all
+            `decoder_input_ids` of shape `(batch_size, sequence_length)`.
+        use_cache (`bool`, *optional*):
+            If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding (see
+            `past_key_values`).
+
+            - 1 for tokens that are **not masked**,
+            - 0 for tokens that are **masked**.
+
+        labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
+            Labels for computing the left-to-right language modeling loss (next word prediction). Indices should be in
+            `[-100, 0, ..., config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are
+            ignored (masked), the loss is only computed for the tokens with labels n `[0, ..., config.vocab_size]`
+
+        Returns:
+
+        Example:
+
+        ```python
+        >>> from transformers import AutoTokenizer, XLMProphetNetForCausalLM
+        >>> import torch
+
+        >>> tokenizer = AutoTokenizer.from_pretrained("patrickvonplaten/xprophetnet-large-uncased-standalone")
+        >>> model = XLMProphetNetForCausalLM.from_pretrained("patrickvonplaten/xprophetnet-large-uncased-standalone")
+        >>> assert model.config.is_decoder, f"{model.__class__} has to be configured as a decoder."
+        >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+        >>> outputs = model(**inputs)
+
+        >>> logits = outputs.logits
+
+        >>> # Model can also be used with EncoderDecoder framework
+        >>> from transformers import BertTokenizer, EncoderDecoderModel, AutoTokenizer
+        >>> import torch
+
+        >>> tokenizer_enc = BertTokenizer.from_pretrained("google-bert/bert-large-uncased")
+        >>> tokenizer_dec = AutoTokenizer.from_pretrained("patrickvonplaten/xprophetnet-large-uncased-standalone")
+        >>> model = EncoderDecoderModel.from_encoder_decoder_pretrained(
+        ...     "google-bert/bert-large-uncased", "patrickvonplaten/xprophetnet-large-uncased-standalone"
+        ... )
+
+        >>> ARTICLE = (
+        ...     "the us state department said wednesday it had received no "
+        ...     "formal word from bolivia that it was expelling the us ambassador there "
+        ...     "but said the charges made against him are `` baseless ."
+        ... )
+        >>> input_ids = tokenizer_enc(ARTICLE, return_tensors="pt").input_ids
+        >>> labels = tokenizer_dec(
+        ...     "us rejects charges against its ambassador in bolivia", return_tensors="pt"
+        ... ).input_ids
+        >>> outputs = model(input_ids=input_ids, decoder_input_ids=labels[:, :-1], labels=labels[:, 1:])
+
+        >>> loss = outputs.loss
+        ```"""
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        # decoder outputs consists of (dec_features, past_key_values, dec_hidden, dec_attn)
+        outputs = self.prophetnet.decoder(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+            head_mask=head_mask,
+            cross_attn_head_mask=cross_attn_head_mask,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+
+        batch_size, sequence_length = input_ids.shape if input_ids is not None else inputs_embeds.shape[:2]
+
+        predicting_streams = outputs[1].view(batch_size, self.config.ngram, sequence_length, -1)
+        predict_logits = self.lm_head(predicting_streams)
+
+        logits = predict_logits[:, 0]
+        logits_ngram = predict_logits[:, 1:] if self.config.ngram > 1 else None
+
+        loss = None
+        if labels is not None:
+            loss = self._compute_loss(predict_logits, labels)
+
+        if not return_dict:
+            all_logits = tuple(v for v in [logits, logits_ngram] if v is not None)
+            return (loss,) + all_logits + outputs[2:] if loss is not None else all_logits + outputs[2:]
+        else:
+            return XLMProphetNetDecoderLMOutput(
+                loss=loss,
+                logits=logits,
+                logits_ngram=logits_ngram,
+                past_key_values=outputs.past_key_values,
+                hidden_states=outputs.hidden_states,
+                hidden_states_ngram=outputs.hidden_states_ngram,
+                attentions=outputs.attentions,
+                ngram_attentions=outputs.ngram_attentions,
+                cross_attentions=outputs.cross_attentions,
+            )
+
+    def _compute_loss(self, logits, labels, ignore_index=-100):
+        expend_targets = labels.new_zeros(self.config.ngram, labels.size(0), labels.size(1)).fill_(ignore_index)
+
+        for i in range(self.config.ngram):
+            if i > 0 and self.disable_ngram_loss:
+                break
+            expend_targets[i, :, :] = labels
+
+        logits = logits.transpose(0, 1).contiguous()
+        lprobs = nn.functional.log_softmax(
+            logits.view(-1, logits.size(-1)),
+            dim=-1,
+            dtype=torch.float32,
+        )
+
+        loss = nn.functional.nll_loss(lprobs, expend_targets.view(-1), reduction="mean")
+
+        if self.config.eps > 0.0:
+            smooth_loss = -lprobs.sum(dim=-1, keepdim=True)
+            non_masked_tokens = expend_targets.ne(ignore_index).view(-1)
+            smooth_loss = smooth_loss[non_masked_tokens]
+            smooth_loss = smooth_loss.mean()
+
+            eps_i = self.config.eps / lprobs.size(-1)
+            loss = (1.0 - self.config.eps) * loss + eps_i * smooth_loss
+
+        return loss
+
+    def prepare_inputs_for_generation(
+        self,
+        input_ids,
+        past_key_values=None,
+        attention_mask=None,
+        head_mask=None,
+        use_cache=None,
+        **kwargs,
+    ):
+        # if model is used as a decoder in encoder-decoder model, the decoder attention mask is created on the fly
+        if attention_mask is None:
+            attention_mask = input_ids.new_ones(input_ids.shape)
+
+        if past_key_values:
+            input_ids = input_ids[:, -1:]
+        # first step, decoder_cached_states are empty
+        return {
+            "input_ids": input_ids,  # encoder_outputs is defined. input_ids not needed
+            "attention_mask": attention_mask,
+            "head_mask": head_mask,
+            "past_key_values": past_key_values,
+            "use_cache": use_cache,
+        }
+
+    @staticmethod
+    def _reorder_cache(past_key_values, beam_idx):
+        reordered_past = ()
+        for layer_past in past_key_values:
+            reordered_past += (
+                tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past),
+            )
+        return reordered_past
+
+
+class XLMProphetNetDecoderWrapper(XLMProphetNetPreTrainedModel):
+    """
+    This is a wrapper class, so that [`XLMProphetNetForCausalLM`] can correctly be loaded from pretrained XLMProphetNet
+    classes.
+    """
+
+    def __init__(self, config: XLMProphetNetConfig):
+        super().__init__(config)
+
+        self.word_embeddings = nn.Embedding(config.vocab_size, config.hidden_size, padding_idx=config.pad_token_id)
+        self.decoder = XLMProphetNetDecoder(config, word_embeddings=self.word_embeddings)
+
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def _tie_weights(self):
+        self._tie_or_clone_weights(self.word_embeddings, self.decoder.get_input_embeddings())
+
+    def forward(self, *args, **kwargs):
+        return self.decoder(*args, **kwargs)
+
+
+__all__ = [
+    "XLMProphetNetDecoder",
+    "XLMProphetNetEncoder",
+    "XLMProphetNetForCausalLM",
+    "XLMProphetNetForConditionalGeneration",
+    "XLMProphetNetModel",
+    "XLMProphetNetPreTrainedModel",
+]
+    .   p   o   s   i   t   i   o   n   _   e   m   b   e   d   d   i   n   g       =       n   n   .   E   m   b   e   d   d   i   n   g   (   s   e   l   f   .   n   u   m   _   p   o   s   i   t   i   o   n   s   ,       s   e   l   f   .   e   m   b   e   d   _   d   i   m   )   
+   
+                   d   e   f       f   o   r   w   a   r   d   (   s   e   l   f   ,       p   i   x   e   l   _   v   a   l   u   e   s   :       t   o   r   c   h   .   F   l   o   a   t   T   e   n   s   o   r   ,       p   a   t   c   h   _   a   t   t   e   n   t   i   o   n   _   m   a   s   k   :       t   o   r   c   h   .   B   o   o   l   T   e   n   s   o   r   )       -   >       t   o   r   c   h   .   T   e   n   s   o   r   :   
+                                   b   a   t   c   h   _   s   i   z   e   ,       _   ,       m   a   x   _   i   m   _   h   ,       m   a   x   _   i   m   _   w       =       p   i   x   e   l   _   v   a   l   u   e   s   .   s   h   a   p   e   
+   
+                                   p   a   t   c   h   _   e   m   b   e   d   s       =       s   e   l   f   .   p   a   t   c   h   _   e   m   b   e   d   d   i   n   g   (   p   i   x   e   l   _   v   a   l   u   e   s   )   
+                                   e   m   b   e   d   d   i   n   g   s       =       p   a   t   c   h   _   e   m   b   e   d   s   .   f   l   a   t   t   e   n   (   2   )   .   t   r   a   n   s   p   o   s   e   (   1   ,       2   )   
+   
+                                   m   a   x   _   n   b   _   p   a   t   c   h   e   s   _   h   ,       m   a   x   _   n   b   _   p   a   t   c   h   e   s   _   w       =       m   a   x   _   i   m   _   h       /   /       s   e   l   f   .   p   a   t   c   h   _   s   i   z   e   ,       m   a   x   _   i   m   _   w       /   /       s   e   l   f   .   p   a   t   c   h   _   s   i   z   e   
+                                   b   o   u   n   d   a   r   i   e   s       =       t   o   r   c   h   .   a   r   a   n   g   e   (   1       /       s   e   l   f   .   n   u   m   _   p   a   t   c   h   e   s   _   p   e   r   _   s   i   d   e   ,       1   .   0   ,       1       /       s   e   l   f   .   n   u   m   _   p   a   t   c   h   e   s   _   p   e   r   _   s   i   d   e   )   
+                                   p   o   s   i   t   i   o   n   _   i   d   s       =       t   o   r   c   h   .   f   u   l   l   (   s   i   z   e   =   (   b   a   t   c   h   _   s   i   z   e   ,       m   a   x   _   n   b   _   p   a   t   c   h   e   s   _   h       *       m   a   x   _   n   b   _   p   a   t   c   h   e   s   _   w   )   ,       f   i   l   l   _   v   a   l   u   e   =   0   )   
+   
+                                   f   o   r       b   a   t   c   h   _   i   d   x   ,       p   _   a   t   t   n   _   m   a   s   k       i   n       e   n   u   m   e   r   a   t   e   (   p   a   t   c   h   _   a   t   t   e   n   t   i   o   n   _   m   a   s   k   )   :   
+                                                   n   b   _   p   a   t   c   h   e   s   _   h       =       p   _   a   t   t   n   _   m   a   s   k   [   :   ,       0   ]   .   s   u   m   (   )   
+                                                   n   b   _   p   a   t   c   h   e   s   _   w       =       p   _   a   t   t   n   _   m   a   s   k   [   0   ]   .   s   u   m   (   )   
+   
+                                                   f   r   a   c   t   i   o   n   a   l   _   c   o   o   r   d   s   _   h       =       t   o   r   c   h   .   a   r   a   n   g   e   (   0   ,       1       -       1   e   -   6   ,       1       /       n   b   _   p   a   t   c   h   e   s   _   h   )   
+                                                   f   r   a   c   t   i   o   n   a   l   _   c   o   o   r   d   s   _   w       =       t   o   r   c   h   .   a   r   a   n   g   e   (   0   ,       1       -       1   e   -   6   ,       1       /       n   b   _   p   a   t   c   h   e   s   _   w   )   
+   
+                                                   b   u   c   k   e   t   _   c   o   o   r   d   s   _   h       =       t   o   r   c   h   .   b   u   c   k   e   t   i   z   e   (   f   r   a   c   t   i   o   n   a   l   _   c   o   o   r   d   s   _   h   ,       b   o   u   n   d   a   r   i   e   s   ,       r   i   g   h   t   =   T   r   u   e   )   
+                                                   b   u   c   k   e   t   _   c   o   o   r   d   s   _   w       =       t   o   r   c   h   .   b   u   c   k   e   t   i   z   e   (   f   r   a   c   t   i   o   n   a   l   _   c   o   o   r   d   s   _   w   ,       b   o   u   n   d   a   r   i   e   s   ,       r   i   g   h   t   =   T   r   u   e   )   
+   
+                                                   p   o   s   _   i   d   s       =       (   b   u   c   k   e   t   _   c   o   o   r   d   s   _   h   [   :   ,       N   o   n   e   ]       *       s   e   l   f   .   n   u   m   _   p   a   t   c   h   e   s   _   p   e   r   _   s   i   d   e       +       b   u   c   k   e   t   _   c   o   o   r   d   s   _   w   )   .   f   l   a   t   t   e   n   (   )   
+                                                   p   o   s   i   t   i   o   n   _   i   d   s   [   b   a   t   c   h   _   i   d   x   ]   [   p   _   a   t   t   n   _   m   a   s   k   .   v   i   e   w   (   -   1   )   .   c   p   u   (   )   ]       =       p   o   s   _   i   d   s   
+   
+                                   p   o   s   i   t   i   o   n   _   i   d   s       =       p   o   s   i   t   i   o   n   _   i   d   s   .   t   o   (   s   e   l   f   .   p   o   s   i   t   i   o   n   _   e   m   b   e   d   d   i   n   g   .   w   e   i   g   h   t   .   d   e   v   i   c   e   )   
+                                   e   m   b   e   d   d   i   n   g   s       =       e   m   b   e   d   d   i   n   g   s       +       s   e   l   f   .   p   o   s   i   t   i   o   n   _   e   m   b   e   d   d   i   n   g   (   p   o   s   i   t   i   o   n   _   i   d   s   )   
+                                   r   e   t   u   r   n       e   m   b   e   d   d   i   n   g   s   
+   
+   
+   d   e   f       e   a   g   e   r   _   a   t   t   e   n   t   i   o   n   _   f   o   r   w   a   r   d   (   
+                   m   o   d   u   l   e   :       n   n   .   M   o   d   u   l   e   ,   
+                   q   u   e   r   y   :       t   o   r   c   h   .   T   e   n   s   o   r   ,   
+                   k   e   y   :       t   o   r   c   h   .   T   e   n   s   o   r   ,   
+                   v   a   l   u   e   :       t   o   r   c   h   .   T   e   n   s   o   r   ,   
+                   a   t   t   e   n   t   i   o   n   _   m   a   s   k   :       O   p   t   i   o   n   a   l   [   t   o   r   c   h   .   T   e   n   s   o   r   ]   ,   
+                   s   c   a   l   i   n   g   :       f   l   o   a   t   ,   
+                   d   r   o   p   o   u   t   :       f   l   o   a   t       =       0   .   0   ,   
+                   *   *   k   w   a   r   g   s   ,   
+   )   :   
+                   a   t   t   n   _   w   e   i   g   h   t   s       =       t   o   r   c   h   .   m   a   t   m   u   l   (   q   u   e   r   y   ,       k   e   y   .   t   r   a   n   s   p   o   s   e   (   -   1   ,       -   2   )   )       *       s   c   a   l   i   n   g   
+                   i   f       a   t   t   e   n   t   i   o   n   _   m   a   s   k       i   s       n   o   t       N   o   n   e   :   
+                                   a   t   t   n   _   w   e   i   g   h   t   s       =       a   t   t   n   _   w   e   i   g   h   t   s       +       a   t   t   e   n   t   i   o   n   _   m   a   s   k   
+   
+                   a   t   t   n   _   w   e   i   g   h   t   s       =       n   n   .   f   u   n   c   t   i   o   n   a   l   .   s   o   f   t   m   a   x   (   a   t   t   n   _   w   e   i   g   h   t   s   ,       d   i   m   =   -   1   ,       d   t   y   p   e   =   t   o   r   c   h   .   f   l   o   a   t   3   2   )   .   t   o   (   q   u   e   r   y   .   d   t   y   p   e   )   
+                   a   t   t   n   _   w   e   i   g   h   t   s       =       n   n   .   f   u   n   c   t   i   o   n   a   l   .   d   r   o   p   o   u   t   (   a   t   t   n   _   w   e   i   g   h   t   s   ,       p   =   d   r   o   p   o   u   t   ,       t   r   a   i   n   i   n   g   =   m   o   d   u   l   e   .   t   r   a   i   n   i   n   g   )   
+   
+                   a   t   t   n   _   o   u   t   p   u   t       =       t   o   r   c   h   .   m   a   t   m   u   l   (   a   t   t   n   _   w   e   i   g   h   t   s   ,       v   a   l   u   e   )   
+                   a   t   t   n   _   o   u   t   p   u   t       =       a   t   t   n   _   o   u   t   p   u   t   .   t   r   a   n   s   p   o   s   e   (   1   ,       2   )   .   c   o   n   t   i   g   u   o   u   s   (   )   
+   
+                   r   e   t   u   r   n       a   t   t   n   _   o   u   t   p   u   t   ,       a   t   t   n   _   w   e   i   g   h   t   s   
+   
+   
+   c   l   a   s   s       S   m   o   l   V   L   M   V   i   s   i   o   n   A   t   t   e   n   t   i   o   n   (   n   n   .   M   o   d   u   l   e   )   :   
+                   "   "   "   M   u   l   t   i   -   h   e   a   d   e   d       a   t   t   e   n   t   i   o   n       f   r   o   m       '   A   t   t   e   n   t   i   o   n       I   s       A   l   l       Y   o   u       N   e   e   d   '       p   a   p   e   r   "   "   "   
+   
+                   d   e   f       _   _   i   n   i   t   _   _   (   s   e   l   f   ,       c   o   n   f   i   g   )   :   
+                                   s   u   p   e   r   (   )   .   _   _   i   n   i   t   _   _   (   )   
+                                   s   e   l   f   .   c   o   n   f   i   g       =       c   o   n   f   i   g   
+                                   s   e   l   f   .   e   m   b   e   d   _   d   i   m       =       c   o   n   f   i   g   .   h   i   d   d   e   n   _   s   i   z   e   
+                                   s   e   l   f   .   n   u   m   _   h   e   a   d   s       =       c   o   n   f   i   g   .   n   u   m   _   a   t   t   e   n   t   i   o   n   _   h   e   a   d   s   
+                                   s   e   l   f   .   h   e   a   d   _   d   i   m       =       s   e   l   f   .   e   m   b   e   d   _   d   i   m       /   /       s   e   l   f   .   n   u   m   _   h   e   a   d   s   
+                                   i   f       s   e   l   f   .   h   e   a   d   _   d   i   m       *       s   e   l   f   .   n   u   m   _   h   e   a   d   s       !   =       s   e   l   f   .   e   m   b   e   d   _   d   i   m   :   
+                                                   r   a   i   s   e       V   a   l   u   e   E   r   r   o   r   (   
+                                                                   f   "   e   m   b   e   d   _   d   i   m       m   u   s   t       b   e       d   i   v   i   s   i   b   l   e       b   y       n   u   m   _   h   e   a   d   s       (   g   o   t       `   e   m   b   e   d   _   d   i   m   `   :       {   s   e   l   f   .   e   m   b   e   d   _   d   i   m   }       a   n   d       `   n   u   m   _   h   e   a   d   s   `   :   "   
+                                                                   f   "       {   s   e   l   f   .   n   u   m   _   h   e   a   d   s   }   )   .   "   
+                                                   )   
+                                   s   e   l   f   .   s   c   a   l   e       =       s   e   l   f   .   h   e   a   d   _   d   i   m   *   *   -   0   .   5   
+                                   s   e   l   f   .   d   r   o   p   o   u   t       =       c   o   n   f   i   g   .   a   t   t   e   n   t   i   o   n   _   d   r   o   p   o   u   t   
+   
+                                   s   e   l   f   .   k   _   p   r   o   j       =       n   n   .   L   i   n   e   a   r   (   s   e   l   f   .   e   m   b   e   d   _   d   i   m   ,       s   e   l   f   .   e   m   b   e   d   _   d   i   m   )   
+                                   s   e   l   f   .   v   _   p   r   o   j       =       n   n   .   L   i   n   e   a   r   (   s   e   l   f   .   e   m   b   e   d   _   d   i   m   ,       s   e   l   f   .   e   m   b   e   d   _   d   i   m   )   
+                                   s   e   l   f   .   q   _   p   r   o   j       =       n   n   .   L   i   n   e   a   r   (   s   e   l   f   .   e   m   b   e   d   _   d   i   m   ,       s   e   l   f   .   e   m   b   e   d   _   d   i   m   )   
+                                   s   e   l   f   .   o   u   t   _   p   r   o   j       =       n   n   .   L   i   n   e   a   r   (   s   e   l   f   .   e   m   b   e   d   _   d   i   m   ,       s   e   l   f   .   e   m   b   e   d   _   d   i   m   )   
+   
+                                   #       I   g   n   o   r   e       c   o   p   y   
+                                   s   e   l   f   .   i   s   _   c   a   u   s   a   l       =       F   a   l   s   e   
+   
+                   d   e   f       f   o   r   w   a   r   d   (   
+                                   s   e   l   f   ,   
+                                   h   i   d   d   e   n   _   s   t   a   t   e   s   :       t   o   r   c   h   .   T   e   n   s   o   r   ,   
+                                   a   t   t   e   n   t   i   o   n   _   m   a   s   k   :       O   p   t   i   o   n   a   l   [   t   o   r   c   h   .   T   e   n   s   o   r   ]       =       N   o   n   e   ,   
+                                   o   u   t   p   u   t   _   a   t   t   e   n   t   i   o   n   s   :       O   p   t   i   o   n   a   l   [   b   o   o   l   ]       =       F   a   l   s   e   ,   
+                   )       -   >       T   u   p   l   e   [   t   o   r   c   h   .   T   e   n   s   o   r   ,       O   p   t   i   o   n   a   l   [   t   o   r   c   h   .   T   e   n   s   o   r   ]   ]   :   
+                                   "   "   "   I   n   p   u   t       s   h   a   p   e   :       B   a   t   c   h       x       T   i   m   e       x       C   h   a   n   n   e   l   "   "   "   
+   
+                                   b   a   t   c   h   _   s   i   z   e   ,       s   e   q   _   l   e   n   g   t   h   ,       e   m   b   e   d   _   d   i   m       =       h   i   d   d   e   n   _   s   t   a   t   e   s   .   s   h   a   p   e   
+   
+                                   q   u   e   r   i   e   s       =       s   e   l   f   .   q   _   p   r   o   j   (   h   i   d   d   e   n   _   s   t   a   t   e   s   )   
+                                   k   e   y   s       =       s   e   l   f   .   k   _   p   r   o   j   (   h   i   d   d   e   n   _   s   t   a   t   e   s   )   
+                                   v   a   l   u   e   s       =       s   e   l   f   .   v   _   p   r   o   j   (   h   i   d   d   e   n   _   s   t   a   t   e   s   )   
+   
+                                   q   u   e   r   i   e   s       =       q   u   e   r   i   e   s   .   v   i   e   w   (   b   a   t   c   h   _   s   i   z   e   ,       s   e   q   _   l   e   n   g   t   h   ,       s   e   l   f   .   n   u   m   _   h   e   a   d   s   ,       s   e   l   f   .   h   e   a   d   _   d   i   m   )   .   t   r   a   n   s   p   o   s   e   (   1   ,       2   )   
+                                   k   e   y   s       =       k   e   y   s   .   v   i   e   w   (   b   a   t   c   h   _   s   i   z   e   ,       s   e   q   _   l   e   n   g   t   h   ,       s   e   l   f   .   n   u   m   _   h   e   a   d   s   ,       s   e   l   f   .   h   e   a   d   _   d   i   m   )   .   t   r   a   n   s   p   o   s   e   (   1   ,       2   )   
+                                   v   a   l   u   e   s       =       v   a   l   u   e   s   .   v   i   e   w   (   b   a   t   c   h   _   s   i   z   e   ,       s   e   q   _   l   e   n   g   t   h   ,       s   e   l   f   .   n   u   m   _   h   e   a   d   s   ,       s   e   l   f   .   h   e   a   d   _   d   i   m   )   .   t   r   a   n   s   p   o   s   e   (   1   ,       2   )   
+   
+                                   a   t   t   e   n   t   i   o   n   _   i   n   t   e   r   f   a   c   e   :       C   a   l   l   a   b   l   e       =       e   a   g   e   r   _   a   t   t   e   n   t   i   o   n   _   f   o   r   w   a   r   d   
+                                   i   f       s   e   l   f   .   c   o   n   f   i   g   .   _   a   t   t   n   _   i   m   p   l   e   m   e   n   t   a   t   i   o   n       !   =       "   e   a   g   e   r   "   :   
+                                                   i   f       s   e   l   f   .   c   o   n   f   i   g   .   _   a   t   t   n   _   i   m   p   l   e   m   e   n   t   a   t   i   o   n       =   =       "   s   d   p   a   "       a   n   d       o   u   t   p   u   t   _   a   t   t   e   n   t   i   o   n   s   :   
+                                                                   l   o   g   g   e   r   .   w   a   r   n   i   n   g   _   o   n   c   e   (   
+                                                                                   "   `   t   o   r   c   h   .   n   n   .   f   u   n   c   t   i   o   n   a   l   .   s   c   a   l   e   d   _   d   o   t   _   p   r   o   d   u   c   t   _   a   t   t   e   n   t   i   o   n   `       d   o   e   s       n   o   t       s   u   p   p   o   r   t       `   o   u   t   p   u   t   _   a   t   t   e   n   t   i   o   n   s   =   T   r   u   e   `   .       F   a   l   l   i   n   g       b   a   c   k       t   o       "   
+                                                                                   '   e   a   g   e   r       a   t   t   e   n   t   i   o   n   .       T   h   i   s       w   a   r   n   i   n   g       c   a   n       b   e       r   e   m   o   v   e   d       u   s   i   n   g       t   h   e       a   r   g   u   m   e   n   t       `   a   t   t   n   _   i   m   p   l   e   m   e   n   t   a   t   i   o   n   =   "   e   a   g   e   r   "   `       w   h   e   n       l   o   a   d   i   n   g       t   h   e       m   o   d   e   l   .   '   
+                                                                   )   
+                                                   e   l   s   e   :   
+                                                                   a   t   t   e   n   t   i   o   n   _   i   n   t   e   r   f   a   c   e       =       A   L   L   _   A   T   T   E   N   T   I   O   N   _   F   U   N   C   T   I   O   N   S   [   s   e   l   f   .   c   o   n   f   i   g   .   _   a   t   t   n   _   i   m   p   l   e   m   e   n   t   a   t   i   o   n   ]   
+   
+                                   a   t   t   n   _   o   u   t   p   u   t   ,       a   t   t   n   _   w   e   i   g   h   t   s       =       a   t   t   e   n   t   i   o   n   _   i   n   t   e   r   f   a   c   e   (   
+                                                   s   e   l   f   ,   
+                                                   q   u   e   r   i   e   s   ,   
+                                                   k   e   y   s   ,   
+                                                   v   a   l   u   e   s   ,   
+                                                   a   t   t   e   n   t   i   o   n   _   m   a   s   k   ,   
+                                                   i   s   _   c   a   u   s   a   l   =   s   e   l   f   .   i   s   _   c   a   u   s   a   l   ,   
+                                                   s   c   a   l   i   n   g   =   s   e   l   f   .   s   c   a   l   e   ,   
+                                                   d   r   o   p   o   u   t   =   0   .   0       i   f       n   o   t       s   e   l   f   .   t   r   a   i   n   i   n   g       e   l   s   e       s   e   l   f   .   d   r   o   p   o   u   t   ,   
+                                   )   
+   
+                                   a   t   t   n   _   o   u   t   p   u   t       =       a   t   t   n   _   o   u   t   p   u   t   .   r   e   s   h   a   p   e   (   b   a   t   c   h   _   s   i   z   e   ,       s   e   q   _   l   e   n   g   t   h   ,       e   m   b   e   d   _   d   i   m   )   .   c   o   n   t   i   g   u   o   u   s   (   )   
+                                   a   t   t   n   _   o   u   t   p   u   t       =       s   e   l   f   .   o   u   t   _   p   r   o   j   (   a   t   t   n   _   o   u   t   p   u   t   )   
+   
+                                   i   f       n   o   t       o   u   t   p   u   t   _   a   t   t   e   n   t   i   o   n   s   :   
+                                                   a   t   t   n   _   w   e   i   g   h   t   s       =       N   o   n   e   
+   
+                                   r   e   t   u   r   n       a   t   t   n   _   o   u   t   p   u   t   ,       a   t   t   n   _   w   e   i   g   h   t   s   
+   
+   
+   c   l   a   s   s       S   m   o   l   V   L   M   V   i   s   i   o   n   M   L   P   (   n   n   .   M   o   d   u   l   e   )   :   
+                   d   e   f       _   _   i   n   i   t   _   _   (   s   e   l   f   ,       c   o   n   f   i   g   )   :   
+                                   s   u   p   e   r   (   )   .   _   _   i   n   i   t   _   _   (   )   
+                                   s   e   l   f   .   c   o   n   f   i   g       =       c   o   n   f   i   g   
+                                   s   e   l   f   .   a   c   t   i   v   a   t   i   o   n   _   f   n       =       A   C   T   2   F   N   [   c   o   n   f   i   g   .   h   i   d   d   e   n   _   a   c   t   ]   
+                                   s   e   l   f   .   f   c   1       =       n   n   .   L   i   n   e   a   r   (   c   o   n   f   i   g   .   h   i   d   d   e   n   _   s   i   z   e   ,       c   o   n   f   i   g   .   i   n   t   e   r   m   e   d   i   a   t   e   _   s   i   z   e   )   
+                                   s   e   l   f   .   f   c   2       =       n   n   .   L   i   n   e   a   r   (   c   o   n   f   i   g   .   i   n   t   e   r   m   e   d   i   a   t   e   _   s   i   z   e   ,       c   o   n   f   i   g   .   h   i   d   d   e   n   _   s   i   z   e   )   
+   
+                   d   
