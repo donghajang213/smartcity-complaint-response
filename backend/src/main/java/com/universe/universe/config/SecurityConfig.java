@@ -105,14 +105,14 @@ public class SecurityConfig {
         return src;
     }
 
-    @Bean
-    @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnMissingBean(name = "corsFilterRegistration")
-    @Profile("!test")
-    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
-        CorsFilter filter = new CorsFilter(source);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
-    }
+//    @Bean
+//    @ConditionalOnWebApplication(type = Type.SERVLET)
+//    @ConditionalOnMissingBean(name = "corsFilterRegistration")
+//    @Profile("!test")
+//    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
+//        CorsFilter filter = new CorsFilter(source);
+//        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
+//        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+//        return bean;
+//    }
 }
