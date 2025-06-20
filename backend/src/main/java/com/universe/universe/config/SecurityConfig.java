@@ -46,7 +46,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(Customizer.withDefaults())  // CORS 필터 한 번만 등록
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, authEx) ->
@@ -56,22 +56,40 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/api/signup", "/api/signup/**",
-                                "/api/login",  "/api/login/**",
-                                "/api/auth/**", "/api/chat","/api/chat/**"
+                                "/api/signup", "/api/login", "/api/auth/**", "/api/chat/**"
                         ).permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/ads/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/ads/click/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/static/ads/**").permitAll()
+                        .requestMatchers("/static/ads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
-                .formLogin(form -> form.disable());
+                .formLogin(form -> form.disable())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "https://smartcityksva.site",
+                "https://www.smartcityksva.site",
+                "https://smartcity-rust.vercel.app"
+        ));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        // CORS 설정을 /api/** 경로로만 적용
+        src.registerCorsConfiguration("/api/**", config);
+        return src;
     }
 
     @Bean
@@ -84,35 +102,5 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    @Primary
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "https://smartcityksva.site",
-                "https://www.smartcityksva.site",
-                "https://smartcity-rust.vercel.app"
-        ));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
-        src.registerCorsConfiguration("/**", config);
-        return src;
-    }
-
-//    @Bean
-//    @ConditionalOnWebApplication(type = Type.SERVLET)
-//    @ConditionalOnMissingBean(name = "corsFilterRegistration")
-//    @Profile("!test")
-//    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
-//        CorsFilter filter = new CorsFilter(source);
-//        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
-//        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-//        return bean;
-//    }
+    // FilterRegistrationBean<CorsFilter> 빈은 제거했습니다.
 }
