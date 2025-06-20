@@ -27,3 +27,17 @@ recaptcha:
 kakao:
   rest-api-key: 8413a4aab24c3a25cc81eb161bcd7277
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+ad:
+  upload-dir: ${AD_UPLOAD_DIR:uploads/ads}
+  base-url: ${AD_BASE_URL:http://localhost:8080/static/ads}
+
+servlet:
+  multipart:
+    max-file-size: 20MB
+    max-request-size: 20MB

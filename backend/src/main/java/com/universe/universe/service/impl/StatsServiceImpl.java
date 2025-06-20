@@ -16,12 +16,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+
 public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
+    private final AccessLogRepository accessLogRepository;
 
-    public StatsServiceImpl(StatsRepository statsRepository) {
+    public StatsServiceImpl(StatsRepository statsRepository,
+                            AccessLogRepository accessLogRepository) {
         this.statsRepository = statsRepository;
+        this.accessLogRepository = accessLogRepository;
     }
+
 
     @Override
     public List<DateCount> getNewRegistrations() {
@@ -30,7 +35,7 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<HourCount> getTodayAccessors() {
-        return statsRepository.fetchTodayAccessors();
+        return accessLogRepository.fetchTodayAccessors();
     }
 
     @Override
