@@ -1,9 +1,10 @@
 from .IntentEntity import ExtractEntities
 from .trafficAPI.bus_arrival_query2 import process_question1
 from .weather_call import call_weather_api_from_entities
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 import os
+
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -15,28 +16,44 @@ def extract_entities(question: str):
     entities = extractor.extract_entities(question, cts, intents)
     return entities
 
-def intent_api_handler2(question: str):
-    entities = extract_entities(question)
-    results_dict = {
-        "question" : question,
-        "results" : []
-    }
-    api_results = []
-    for ent_result in entities["results"]:
-        api_result = ent_result.copy()
-        if ent_result["category"] == "교통":
-            traffic_results = process_question1(ent_result)
-            api_results.append(traffic_results)
-        elif ent_result["category"] == "날씨" or ent_result["category"] == "환경":
-            weather_results = call_weather_api_from_entities(ent_result)
-            api_results.append(weather_results)
+def intent_api_handler2(message: str):
+    print(f"Received user message: {message}")
+    
+    extractor = ExtractEntities(api_key=GOOGLE_API_KEY)
+    categories = extractor.extract_category(message)
+    intents = extractor.extract_intents(message, categories)
+    extracted = extractor.extract_entities(message, categories, intents)
 
-    results_dict["results"] = api_results
-    return results_dict
+    print("👉 의도/엔티티 추출 결과:", extracted)
+
+    results = []
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for ent_result in extracted.get("results", []):
+            category = ent_result["category"]
+            intent = ent_result["intent"]
+
+            if category == "날씨" or category == "환경":
+                print("🌦 날씨/환경 처리 시작")
+                future = executor.submit(call_weather_api_from_entities, ent_result)
+                futures.append(future)
+            elif category == "교통":
+                future = executor.submit(process_question1, ent_result)
+                futures.append(future)
+            
+        for future in as_completed(futures):
+            try:
+                results.append(future.result())
+            except Exception as e:
+                print("Error:", e)
+                results.append({"error": str(e)})
+
+    return {"question": message, "results": results}
 
 
 
-if __name__ == "__main__":
+
+# if __name__ == "__main__":
     # question = "한남운수대학동차고지에서 501번 버스 언제 와?"
     # print("\n\n\n교통 관련 ")
     # intent_api_handler(question)
@@ -51,7 +68,7 @@ if __name__ == "__main__":
     # question3 = "합정 날씨랑 홍대입구역 방면 합정역 지하철 도착 정보 알려줘"
     # intent_api_handler(question3)
 
-    print("\n\n\n통합 질문 관련 ")
-    question3 = "합정 미세먼지랑 홍대입구역 방면 합정역 지하철 도착 정보 알려줘"
-    results = intent_api_handler(question3)
-    print(f"\n\n\n\n\n\n\n\n\n\n\n최종 결과:\n{results}")
+    # print("\n\n\n통합 질문 관련 ")
+    # question3 = "합정 미세먼지랑 홍대입구역 방면 합정역 지하철 도착 정보 알려줘"
+    # results = intent_api_handler(question3)
+    # print(f"\n\n\n\n\n\n\n\n\n\n\n최종 결과:\n{results}")
