@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/signup", "/api/signup/**",
                                 "/api/login",  "/api/login/**",
-                                "/api/auth/**"
+                                "/api/auth/**", "api/chat","api/chat/**"
                         ).permitAll()
 
                         /* 3) API 문서 */
