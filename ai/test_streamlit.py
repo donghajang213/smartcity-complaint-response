@@ -23,12 +23,13 @@ if st.button("질문하기") and user_input:
             if res.status_code == 200:
                 data = res.json()
                 results = data["answer"]["results"]
+                print("\n\n\n", results)
                 if results["answer"] and results["sources"]:
                     for source in results["sources"]:
                         if "API_results" in source.keys():
                             st.success(results["answer"] + "\n\n\n\n" + str(source["API_results"]))
                         elif "metadata" in source.keys():
-                            st.success(results["answer"] + "\n\n\n\n" + source["metadata"])
+                            st.success(results["answer"] + "\n\n\n\n관련 질문 날짜 기록:\n" + str(source["metadata"]))
                 elif results["answer"]:
                     st.success(results["answer"])
 

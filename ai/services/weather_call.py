@@ -182,7 +182,7 @@ def call_weather_api_from_entities(entities_result: dict):
                             "dataTime": row['dataTime']
                         })
             if dust_results:
-                api_results["API_results"].append({
+                api_results.append({
                     "type": "미세먼지",
                     "data": dust_results
                 })
