@@ -7,6 +7,7 @@ router = APIRouter()
 class ChatIn(BaseModel):
 	message: str
 
+
 @router.post("/chat")
 async def chat(req: ChatIn):
     # Intent API 핸들러를 사용하여 질문 처리

@@ -69,21 +69,80 @@ def call_weather_api_from_entities(entities_result: dict):
         "API_results": []
     }
 
+    # ✅ 역 → 구 매핑
+    station_to_district_map = {
+    "서울역": "중구",
+    "용산역": "용산구",
+    "이태원역": "용산구",
+    "한남역": "용산구",
+    "강남역": "강남구",
+    "역삼역": "강남구",
+    "선릉역": "강남구",
+    "삼성역": "강남구",
+    "신사역": "강남구",
+    "청담역": "강남구",
+    "건대입구역": "광진구",
+    "구의역": "광진구",
+    "천호역": "강동구",
+    "둔촌동역": "강동구",
+    "길동역": "강동구",
+    "잠실역": "송파구",
+    "잠실새내역": "송파구",
+    "송파역": "송파구",
+    "가락시장역": "송파구",
+    "고속터미널역": "서초구",
+    "교대역": "서초구",
+    "서초역": "서초구",
+    "방배역": "서초구",
+    "사당역": "동작구",
+    "상도역": "동작구",
+    "노량진역": "동작구",
+    "영등포역": "영등포구",
+    "신길역": "영등포구",
+    "여의도역": "영등포구",
+    "마포역": "마포구",
+    "공덕역": "마포구",
+    "홍대입구역": "마포구",
+    "합정역": "마포구",
+    "신촌역": "서대문구",
+    "이대역": "서대문구",
+    "충정로역": "서대문구",
+    "종로3가역": "종로구",
+    "종각역": "종로구",
+    "광화문역": "종로구",
+    "안국역": "종로구",
+    "동대문역": "종로구",
+    "혜화역": "종로구",
+    "을지로입구역": "중구",
+    "을지로3가역": "중구",
+    "충무로역": "중구",
+    "동대문역사문화공원역": "중구",
+    "왕십리역": "성동구",
+    "뚝섬역": "성동구",
+    "성수역": "성동구",
+    "상왕십리역": "성동구",
+    "노원역": "노원구",
+    "상계역": "노원구"
+}
     entities = entities_result.get("entities", [])
     region = next((e["value"] for e in entities if e.get("type") == "지역"), None)
+
+    # ✅ 역 이름이면 행정구 이름으로 치환
+    region = station_to_district_map.get(region, region)
+
     if not region:
         return results_dict
 
     # 요청된 타입들 (기온, 미세먼지 등)
     requested_types = list({e.get("type") for e in entities if e.get("type") != "지역"})
 
-    # requested_types가 비어있으면 기본 날씨 타입들로 설정 (기본 정보)
+    # requested_types가 비어있으면 기본 날씨 타입들로 설정
     if not requested_types:
         requested_types = ["기온", "강수형태", "강수량"]
 
-    # 날씨 관련 타입 모으기
+    # 날씨 관련 타입
     weather_types = [t for t in requested_types if t in entity_to_category_map.keys()]
-    # 미세먼지 관련 타입 모으기
+    # 미세먼지 관련 타입
     dust_types = [t for t in requested_types if t in dust_entity_map.keys()]
 
     # 날씨 API 호출
@@ -108,7 +167,7 @@ def call_weather_api_from_entities(entities_result: dict):
 
     # 미세먼지 API 호출
     if dust_types:
-        sido_name = "서울"  # 필요시 조정
+        sido_name = "서울"
         df_dust = get_air_quality(sido_name=sido_name, region=region)
         if df_dust is not None and not df_dust.empty:
             dust_results = []
