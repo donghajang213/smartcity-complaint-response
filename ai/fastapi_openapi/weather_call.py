@@ -154,7 +154,7 @@ def call_weather_api_from_entities(question_result: dict):
 
 if __name__=="__main__":
     extract_entities = ExtractEntities(api_key=os.getenv("GOOGLE_API_KEY"))
-
+    print(os.getenv("GOOGLE_API_KEY"))
     question = "오늘 합정 12시 온도랑 미세먼지 알려줘"
 
 
