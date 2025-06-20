@@ -1,7 +1,7 @@
-from ExtractEntities2 import ExtractEntities
-from weahterapi.weatherapi import weather
+from .IntentEntity import ExtractEntities
+from .weatherAPI import weather
+from .dustAPI import get_air_quality
 from dotenv import load_dotenv
-from dustapi.dustapi import get_air_quality  # 미세먼지 API 함수 import
 import os
 
 load_dotenv()
@@ -76,31 +76,36 @@ dust_entity_map = {
     "초미세먼지": "pm25Value"
 }
 
-def call_weather_api_from_entities(question_result: dict):
+def call_weather_api_from_entities(entities_result: dict):
+    # 반환값
+    results_dict = {
+        "entity_results" : entities_result,
+        "API_results" : dict()
+    }
+    api_results = []
+
     # 공통 지역 추출
-    all_entities = [e for r in question_result["results"] for e in r["entities"]]
+    all_entities = [e for e in entities_result["entities"]]
     common_region = next((e["value"] for e in all_entities if e.get("type") == "지역"), None)
 
     # 날씨 관련 요청들 모으기
     weather_requests = []
     dust_requests = []
+    print(entities_result)
+    intent = entities_result["intent"]
+    entities = entities_result["entities"]
+    region = next((e["value"] for e in entities if e.get("type") == "지역"), common_region)
+    if not region:
+        print(f"❌ '{intent}' 관련 API 호출에 필요한 지역 정보가 없어 조회할 수 없습니다.")
     
-    for result in question_result["results"]:
-        intent = result["intent"]
-        entities = result["entities"]
-        region = next((e["value"] for e in entities if e.get("type") == "지역"), common_region)
-        if not region:
-            print(f"❌ '{intent}' 관련 API 호출에 필요한 지역 정보가 없어 조회할 수 없습니다.")
-            continue
-        
-        requested_types = list({e.get("type") for e in entities if e.get("type") != "지역" and e.get("type")})
-        
-        if intent == "날씨":
-            weather_requests.append((region, requested_types))
-        elif intent == "미세먼지":
-            dust_requests.append((region, requested_types))
-        else:
-            print(f"⚠️ '{intent}'에 대한 API 연결은 아직 구현되지 않았습니다.")
+    requested_types = list({e.get("type") for e in entities if e.get("type") != "지역" and e.get("type")})
+    
+    if intent == "날씨":
+        weather_requests.append((region, requested_types))
+    elif intent == "미세먼지":
+        dust_requests.append((region, requested_types))
+    else:
+        print(f"⚠️ '{intent}'에 대한 API 연결은 아직 구현되지 않았습니다.")
 
     # 날씨 데이터 호출 및 출력 (중복 지역은 하나로 합칠 수도 있음)
     for region, requested_types in weather_requests:
@@ -127,7 +132,9 @@ def call_weather_api_from_entities(question_result: dict):
                 print("⚠️ 요청한 항목에 해당하는 데이터가 없습니다.")
         else:
             print("🔍 전체 날씨 항목:")
-            print(df_weather[['category_ko', 'fcstTime', 'fcstValue']])
+            # print(df_weather[['category_ko', 'fcstTime', 'fcstValue']])
+            results_dict["API_results"] = df_weather[['category_ko', 'fcstTime', 'fcstValue']]
+            return results_dict
 
     # 미세먼지 데이터 호출 및 출력
     for region, requested_types in dust_requests:
@@ -145,16 +152,22 @@ def call_weather_api_from_entities(question_result: dict):
                 if column and column in df_dust.columns:
                     for _, row in df_dust.iterrows():
                         print(f"{row['stationName']} 기준 {rt} 수치: {row[column]} ㎍/㎥ (측정시각: {row['dataTime']})")
+                        results_dict["API_results"] = {
+                            "local" : row['stationName'],
+                            "dust_type" : rt,
+                            "dust_value" : row[column],
+                            "dataTime" : row['dataTime']
+                        }
+                        return results_dict
                 else:
                     print(f"⚠️ 요청한 항목 '{rt}'에 대한 데이터가 없습니다.")
         else:
             print(df_dust[['stationName', 'pm10Value', 'pm25Value', 'dataTime']])
 
 
-
 if __name__=="__main__":
     extract_entities = ExtractEntities(api_key=os.getenv("GOOGLE_API_KEY"))
-    print(os.getenv("GOOGLE_API_KEY"))
+
     question = "오늘 합정 12시 온도랑 미세먼지 알려줘"
 
 

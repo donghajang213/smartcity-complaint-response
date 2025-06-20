@@ -2,19 +2,21 @@ import os
 import json
 import requests
 import xmltodict
-from ExtractEntities import ExtractEntities
+from ..IntentEntity import ExtractEntities
 from dotenv import load_dotenv
 import time
 from typing import Optional
 
 load_dotenv()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # 🚏 arsID JSON 로드
-with open("arsid.json", "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "../../data", "arsid.json"), "r", encoding="utf-8") as f:
     station_data = json.load(f)
 
 # ✅ 통합 지하철 JSON 로드
-with open("subway_station_list.json", "r", encoding="utf-8") as f:
+with open(os.path.join(BASE_DIR, "../../data", "subway_station_list.json"), "r", encoding="utf-8") as f:
     subway_data = json.load(f)
 
 # # 🔄 방면(종착역) → 주로 탑승하는 역 매핑
@@ -32,7 +34,7 @@ with open("subway_station_list.json", "r", encoding="utf-8") as f:
 # ✅ 지하철역 이름 정규화 함수
 def normalize_subway_name(name: str) -> str:
     for row in subway_data:
-        station_name = row.get("station_name")  # ✅ 여기 수정
+        station_name = row.get("station_name")
         if not station_name:
             continue
         if name in station_name or station_name in name:
@@ -104,24 +106,21 @@ def get_subway_arrival_info(station_name: str):
 
 
 # 🚀 질문 1건 처리 함수
-def process_question(question: str):
-    print(f"\n💬 질문: {question}")
-    extractor = ExtractEntities(api_key=os.getenv("GOOGLE_API_KEY"))
-
-    categories = extractor.extract_category(question)
-    intents = extractor.extract_intents(question, categories)
-    entities_result = extractor.extract_entities(question, categories, intents)
-
-    print(json.dumps(entities_result, ensure_ascii=False, indent=2))
+def process_question(entities_result: dict):
+    # 반환값
+    results_dict = {
+        "entity_results" : entities_result,
+        "API_results" : []
+    }
+    api_results = []
 
     realtime_entities = None
     realtime_subway_entities = None
 
-    for item in entities_result["results"]:
-        if item["intent"] == "실시간 도착 정보":
-            realtime_entities = item["entities"]
-        elif item["intent"] == "실시간 지하철 도착 정보":
-            realtime_subway_entities = item["entities"]
+    if entities_result["intent"] == "실시간 버스 도착 정보":
+        realtime_entities = entities_result["entities"]
+    elif entities_result["intent"] == "실시간 지하철 도착 정보":
+        realtime_subway_entities = entities_result["entities"]
 
     # 🚍 버스 도착 처리
     if realtime_entities and not realtime_subway_entities:
@@ -137,6 +136,7 @@ def process_question(question: str):
         if ars_id:
             arrival_info = get_bus_arrival_info(ars_id, target_bus_no=bus_no)
             print(arrival_info)
+            api_results.append(arrival_info)
         else:
             print(f"ℹ️ '{station_name}' 은(는) 버스 정류장이 아닐 수 있습니다. (arsID 없음)")
 
@@ -160,24 +160,24 @@ def process_question(question: str):
             normalized_name = normalize_subway_name(subway_station_name)
             arrival_info = get_subway_arrival_info(normalized_name)
             print(arrival_info)
+            api_results.append(arrival_info)
         else:
             print("❌ 지하철역 엔티티가 없습니다.")
+
+    results_dict["API_results"] = api_results
+    return results_dict
 
 
 # ✅ 여러 질문 순차 처리
 if __name__ == "__main__":
     questions = [
-        # "서울역 지하철 언제 와?",
-        # "서울대벤처타운역 지하철 언제 와?",
-        # "한남운수대학동차고지에서 501번 버스 언제 와?",
-        # "노량진역에서 버스 언제 와?",
-        # "서울대벤처타운 상행 언제 와?",
-        # "서울역에서 홍대입구까지 가는 길을 알려줘",
-        # "관악산에서 출발하는 방향 열차 몇 분 남았어?"
-        # "서울대벤처타운 상행 언제 와?"
+        "서울역 지하철 언제 와?",
+        "서울대벤처타운역 지하철 언제 와?",
+        "한남운수대학동차고지에서 501번 버스 언제 와?",
+        "노량진역에서 버스 언제 와?"
     ]
 
     for q in questions:
         process_question(q)
         print("-" * 60)
-        time.sleep(15)
+        time.sleep(7)
