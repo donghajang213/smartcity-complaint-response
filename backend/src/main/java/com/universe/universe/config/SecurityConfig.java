@@ -83,34 +83,34 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "https://smartcityksva.site",
-                "https://www.smartcityksva.site",
-                "https://smartcity-rust.vercel.app"
-        ));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
-        src.registerCorsConfiguration("/**", config);
-        return src;
-    }
-
-    @Bean
-    @ConditionalOnWebApplication(type = Type.SERVLET)
-    @ConditionalOnMissingBean(name = "corsFilterRegistration")
-    @Profile("!test")
-    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
-        CorsFilter filter = new CorsFilter(source);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration config = new CorsConfiguration();
+//        config.setAllowedOrigins(List.of(
+//                "http://localhost:5173",
+//                "https://smartcityksva.site",
+//                "https://www.smartcityksva.site",
+//                "https://smartcity-rust.vercel.app"
+//        ));
+//        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+//        config.setAllowedHeaders(List.of("*"));
+//        config.setExposedHeaders(List.of("Authorization"));
+//        config.setAllowCredentials(true);
+//        config.setMaxAge(3600L);
+//
+//        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+//        src.registerCorsConfiguration("/**", config);
+//        return src;
+//    }
+//
+//    @Bean
+//    @ConditionalOnWebApplication(type = Type.SERVLET)
+//    @ConditionalOnMissingBean(name = "corsFilterRegistration")
+//    @Profile("!test")
+//    public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
+//        CorsFilter filter = new CorsFilter(source);
+//        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
+//        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+//        return bean;
+//    }
 }
