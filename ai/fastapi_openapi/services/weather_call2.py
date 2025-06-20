@@ -80,7 +80,7 @@ def call_weather_api_from_entities(entities_result: dict):
     # 반환값
     results_dict = {
         "entity_results" : entities_result,
-        "API_results" : []
+        "API_results" : dict()
     }
     api_results = []
 
@@ -132,8 +132,8 @@ def call_weather_api_from_entities(entities_result: dict):
                 print("⚠️ 요청한 항목에 해당하는 데이터가 없습니다.")
         else:
             print("🔍 전체 날씨 항목:")
-            print(df_weather[['category_ko', 'fcstTime', 'fcstValue']])
-            api_results.append(df_weather[['category_ko', 'fcstTime', 'fcstValue']].to_dict(orient='records'))
+            # print(df_weather[['category_ko', 'fcstTime', 'fcstValue']])
+            results_dict["API_results"] = df_weather[['category_ko', 'fcstTime', 'fcstValue']]
             return results_dict
 
     # 미세먼지 데이터 호출 및 출력
@@ -152,21 +152,17 @@ def call_weather_api_from_entities(entities_result: dict):
                 if column and column in df_dust.columns:
                     for _, row in df_dust.iterrows():
                         print(f"{row['stationName']} 기준 {rt} 수치: {row[column]} ㎍/㎥ (측정시각: {row['dataTime']})")
-                        api_results.append(
-                            {
-                                "local" : row['stationName'],
-                                "dust_type" : rt,
-                                "dust_value" : row[column],
-                                "dataTime" : row['dataTime']
-                            }
-                        )
+                        results_dict["API_results"] = {
+                            "local" : row['stationName'],
+                            "dust_type" : rt,
+                            "dust_value" : row[column],
+                            "dataTime" : row['dataTime']
+                        }
+                        return results_dict
                 else:
                     print(f"⚠️ 요청한 항목 '{rt}'에 대한 데이터가 없습니다.")
         else:
             print(df_dust[['stationName', 'pm10Value', 'pm25Value', 'dataTime']])
-
-    results_dict["API_results"] = api_results
-    return results_dict
 
 
 if __name__=="__main__":
