@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 
 from APICategory import APICategory
-from traffic_intent import TrafficIntent, FindingWayEntity, RealtimeArrivalEntity, RealtimeSubwayEntity
+from traffic_intent import TrafficIntent, FindingWayEntity, RealtimeBusEntity, RealtimeSubwayEntity
 from environmental_intent import EnvironmentalIntent, EnvironmentalEntity
 
 load_dotenv()
@@ -26,7 +26,7 @@ class ExtractEntities:
         # ✅ 교통 인텐트별 엔티티 매핑
         self.traffic_intent_map = {
             "길찾기": FindingWayEntity,
-            "실시간 도착 정보": RealtimeArrivalEntity,
+            "실시간 도착 정보": RealtimeBusEntity,
             "실시간 지하철 도착 정보": RealtimeSubwayEntity,  # ✅ 추가됨
         }
 
@@ -123,3 +123,17 @@ if __name__ == "__main__":
     intents2 = extractor.extract_intents(question2, cats2)
     result2 = extractor.extract_entities(question2, cats2, intents2)
     print(f"🚇 추출된 엔티티:\n{json.dumps(result2, ensure_ascii=False, indent=2)}")
+
+    # 🚇 예시 3 - 지하철
+    question3 = "서울대벤처타운 상행 언제 와?"
+    cats3 = extractor.extract_category(question3)
+    intents3 = extractor.extract_intents(question3, cats3)
+    result3 = extractor.extract_entities(question3, cats3, intents3)
+    print(f"🚇 추출된 엔티티:\n{json.dumps(result3, ensure_ascii=False, indent=2)}")
+
+    # 🚇 예시 4 - 지하철
+    question4 = "관악산 방면 열차 몇 분 남았어?"
+    cats4 = extractor.extract_category(question4)
+    intents4 = extractor.extract_intents(question4, cats4)
+    result4 = extractor.extract_entities(question4, cats4, intents4)
+    print(f"🚇 추출된 엔티티:\n{json.dumps(result4, ensure_ascii=False, indent=2)}")

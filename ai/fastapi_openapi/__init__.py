@@ -1,3 +1,3 @@
 from .main import app as openapi_app
-from .IntentEntity import *
-from .weahterapi import *
+from .routers import *
+from .services import *

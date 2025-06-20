@@ -1,18 +1,14 @@
 import os
 from google import genai
-from IntentEntity.APICategory import APICategory
-from IntentEntity.traffic_intent import *
-# from .environmental_intent import *
-from IntentEntity.weather_intent import *
-from IntentEntity.environment_intent import *
+from .APICategory import APICategory
+from .traffic_intent import *
+from .weather_intent import *
+from .environment_intent import *
 from dotenv import load_dotenv
 import textwrap
 import json
 
 load_dotenv()
-
-# API 키 설정
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 class ExtractEntities:
     def __init__(self, api_key: str):
@@ -25,9 +21,10 @@ class ExtractEntities:
         }
         self.traffic_intent_map = {
             "길찾기": FindingWayEntity,
-            "실시간 도착 정보": RealtimeArrivalEntity,
+            "실시간 버스 도착 정보": RealtimeBusEntity,
+            "실시간 지하철 도착 정보": RealtimeSubwayEntity
         }
-        self.environment_intent_map = { 
+        self.environment_intent_map = {
             "미세먼지": DustEntity
         }
         self.weather_intent_map = {
@@ -62,24 +59,24 @@ class ExtractEntities:
         response = self.call_gemini_api(prompt=prompt, response_schema=list[APICategory])
         return response
 
-    def extract_intents(self, question: str, categories: list) -> list:
+    def extract_intents(self, question: str, categories: list) -> str:
         intent_list = []
         for category in categories:
-            category_name = category["category"]
-            if category_name not in self.category_map:
-                raise ValueError(f"지원하지 않는 카테고리: {category_name}. 지원되는 카테고리: {list(self.category_map.keys())}")
-            
+            category = category["category"]
+            if category not in self.category_map.keys():
+                raise ValueError(f"지원하지 않는 카테고리: {category}. 지원되는 카테고리: {self.category_map.keys()}")
+        
             # 가능한 intent 리스트 추출
-            valid_intents = set(self.category_to_intent_map[category_name].keys())
+            valid_intents = set(self.category_to_intent_map[category].keys())
             
             prompt = textwrap.dedent(f"""
-            다음 문장에서 '{category_name}' 카테고리에 해당하는 사용자의 의도를 추론해 주세요.
+            다음 문장에서 '{category}' 카테고리에 해당하는 사용자의 의도를 추론해 주세요.
             가능한 의도: {', '.join(valid_intents)}
             문장: {question}
             """)
 
-            response = self.call_gemini_api(prompt=prompt, response_schema=list[self.category_map[category_name]])
-
+            response = self.call_gemini_api(prompt=prompt, response_schema=list[self.category_map[category]])
+            
             # 유효한 의도만 필터링 후 중복 제거
             seen = set()
             filtered = []
@@ -89,16 +86,16 @@ class ExtractEntities:
                     seen.add(intent_value)
                     filtered.append(item)
 
-            print(f"{category_name} 의도 추출 결과: {filtered}")
+            print(f"{category} 의도 추출 결과: {filtered}")
             intent_list.append(filtered)
-        return intent_list
 
+        return intent_list
+    
+    
 
     def extract_entities(self, question: str, categories: list, intents_list: list) -> list:
         result_list = []
         for category, intents in zip(categories, intents_list):
-            print(f"category: {category['category']}")
-            print(f"intents: {intents}")
             category = category["category"]
             print(f"category: {category}")
             intent_map = self.category_to_intent_map[category]
