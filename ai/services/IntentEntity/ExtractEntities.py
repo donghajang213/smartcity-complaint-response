@@ -7,11 +7,8 @@ from .environment_intent import *
 from .administrative_intent import *
 from .facility_intent import *
 from .policy_intent import *
-from dotenv import load_dotenv
 import textwrap
 import json
-
-load_dotenv()
 
 class ExtractEntities:
     def __init__(self, api_key: str):
@@ -148,6 +145,10 @@ class ExtractEntities:
     
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    import os
+
+    load_dotenv()
     extract_entities = ExtractEntities(api_key=os.getenv("GOOGLE_API_KEY"))
     question = "서울역에서 홍대입구까지 가는 길을 알려줘"
     
