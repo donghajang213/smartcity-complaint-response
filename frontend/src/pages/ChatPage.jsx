@@ -26,7 +26,7 @@ export default function ChatPage() {
       {/* 왼쪽 광고: 배경+패딩 */}
       <div className="w-40 bg-white flex items-center justify-center p-4">
         <div className="border rounded-lg overflow-hidden shadow-sm w-full h-full">
-          <AdBanner />
+          <AdBanner position="chat-left"   limit={1} />     // 채팅 좌측
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export default function ChatPage() {
       {/* 오른쪽 광고 */}
       <div className="w-40 bg-white flex items-center justify-center p-4">
         <div className="border rounded-lg overflow-hidden shadow-sm w-full h-full">
-          <AdBanner />
+          <AdBanner position="chat-right"  limit={1} />     // 채팅 우측
         </div>
       </div>
     </div>
