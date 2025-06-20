@@ -1,32 +1,26 @@
 // src/components/chart/TotalUsersChart.jsx
 import React, { useEffect, useState } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
-import axios from 'axios';
+import { StatsAPI } from '../../api/auth';
 
 function TotalUsersChart() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('jwt');
-    if (!token) {
-      console.warn('No JWT, skipping TotalUsersChart fetch');
-      return;
-    }
-
-    axios.get('/api/admin/dashboard/total-users', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    .then(res => {
-      // 백엔드에서 [{ date: "...", count: 123 }, ...] 형태로 리턴한다고 가정
-      setData(res.data);
-    })
-    .catch(err => {
-      console.error('TotalUsersChart 데이터 로드 실패:', err);
-    });
+    StatsAPI.getTotalUsers()
+      .then(res => setData(res.data || []))
+      .catch(err => console.error(
+        '전체 사용자 차트 불러오기 실패:',
+        err.response?.data || err.message
+      ));
   }, []);
 
   return (
@@ -39,7 +33,7 @@ function TotalUsersChart() {
         <XAxis dataKey="date" />
         <YAxis />
         <Tooltip />
-        <Bar dataKey="count" fill="#8884d8" />
+        <Bar dataKey="count" />
       </BarChart>
     </ResponsiveContainer>
   );
