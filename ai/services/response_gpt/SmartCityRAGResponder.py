@@ -9,16 +9,15 @@ import textwrap
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "db")
 
 class SmartCityRAGResponder:
-    def __init__(self, llm, db_path=db_path, collection_name="qa_db"):
+    def __init__(self, llm, db_path = os.path.join(BASE_DIR, "db"), collection_name = "qa_db"):
         self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
         self.llm = llm
         self.db = Chroma(
-            embedding_function=self.embedding,
-            collection_name=collection_name,
-            persist_directory=db_path
+            embedding_function = self.embedding,
+            collection_name = collection_name,
+            persist_directory = db_path
         )
         self.qa_chain = self._create_qa_chain()
 
@@ -36,10 +35,10 @@ class SmartCityRAGResponder:
             )
         )
         return RetrievalQA.from_chain_type(
-            llm=self.llm,
-            retriever=self.db.as_retriever(search_kwargs={"k": k}),
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": prompt}
+            llm = self.llm,
+            retriever = self.db.as_retriever(search_kwargs={"k": k}),
+            return_source_documents = True,
+            chain_type_kwargs = {"prompt": prompt}
         )
 
     def answer(self, question, sim_threshold=0.45):
