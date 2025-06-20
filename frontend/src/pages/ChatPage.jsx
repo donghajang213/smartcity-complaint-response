@@ -1,49 +1,67 @@
-import { useState } from 'react';
-import { useLocation } from 'react-router-dom';      // ← 추가
+// src/pages/ChatPage.jsx
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import ChatInput from '../components/ChatInput';
-// 히스토리·즐겨찾기용 컴포넌트가 있다면 import
-// import HistoryList from '../components/HistoryList';
-// import FavoritesList from '../components/FavoritesList';
+import AdBanner from '../components/AdBanner';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const handleSend = msg => setMessages(prev => [...prev, msg]);
-  const resetChat  = () => setMessages([]);
+  const resetChat = () => setMessages([]);
+  const user = { role: 'FREE' }; // 예시
 
-  // URL 쿼리 파라미터에서 ?tab=history or favorites 추출
   const { search } = useLocation();
   const tab = new URLSearchParams(search).get('tab');
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar onNewChat={resetChat} />
+      {/* 사이드바: 고정 폭, 그림자 */}
+      <div className="w-64 flex flex-col bg-white border-r shadow-md">
+        <Sidebar onNewChat={resetChat} user={user} />
+      </div>
 
+      {/* 왼쪽 광고: 배경+패딩 */}
+      <div className="w-40 bg-white flex items-center justify-center p-4">
+        <div className="border rounded-lg overflow-hidden shadow-sm w-full h-full">
+          <AdBanner />
+        </div>
+      </div>
+
+      {/* 채팅 영역 */}
       <div className="flex-1 flex flex-col">
         <Header />
+        <div className="flex flex-1 overflow-hidden">
+          {tab === 'history' ? (
+            <div className="p-6 overflow-auto w-full bg-white">
+              {/* <HistoryList /> */}
+              히스토리 목록
+            </div>
+          ) : tab === 'favorites' ? (
+            <div className="p-6 overflow-auto w-full bg-white">
+              {/* <FavoritesList /> */}
+              즐겨찾기 목록
+            </div>
+          ) : (
+            <div className="flex flex-col h-full w-full bg-white">
+              <div className="flex-1 overflow-auto p-6">
+                <ChatWindow messages={messages} />
+              </div>
+              <div className="border-t p-4 bg-gray-50">
+                <ChatInput onSend={handleSend} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-        {/* 탭에 따라 콘텐츠 분기 */}
-        {tab === 'history' ? (
-          /* 히스토리 리스트 보여주기 */
-          <div className="p-4">
-            {/* <HistoryList /> */}
-            히스토리 목록 컴포넌트 자리
-          </div>
-        ) : tab === 'favorites' ? (
-          /* 즐겨찾기 리스트 보여주기 */
-          <div className="p-4">
-            {/* <FavoritesList /> */}
-            즐겨찾기 목록 컴포넌트 자리
-          </div>
-        ) : (
-          /* 기본 채팅 UI */
-          <>
-            <ChatWindow messages={messages} />
-            <ChatInput onSend={handleSend} />
-          </>
-        )}
+      {/* 오른쪽 광고 */}
+      <div className="w-40 bg-white flex items-center justify-center p-4">
+        <div className="border rounded-lg overflow-hidden shadow-sm w-full h-full">
+          <AdBanner />
+        </div>
       </div>
     </div>
   );
