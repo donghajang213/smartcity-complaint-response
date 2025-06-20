@@ -1,1 +1,1 @@
-from .bus_arrival_query3 import *
+from .bus_arrival_query import *

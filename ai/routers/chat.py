@@ -1,17 +1,23 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from services import intent_api_handler
+from services import smartcity_question_handler
 
 router = APIRouter()
 
 class ChatIn(BaseModel):
 	message: str
 
-@router.post("/chat")
-async def chat(req: ChatIn):
-    # Intent API 핸들러를 사용하여 질문 처리
-    # results = await intent_api_handler(req.message)
-    results_dict = intent_api_handler(req.message)
-    print(f"최종 결과:\n{results_dict}")
+class ChatOut(BaseModel):
+    answer: dict
 
-    return results_dict
+@router.post("/chat", response_model=ChatOut)
+async def chat(req: ChatIn):
+    print(f"전달 받은 메시지: {req.message}")
+    try:
+        result_text = smartcity_question_handler(req.message)
+        print(f"최종 결과:\n{result_text}")
+        return ChatOut(answer = result_text)
+    except Exception as e:
+        print("Error in smartcity_question_handler:", e)
+        import traceback; traceback.print_exc()
+        return ChatOut(answer = {"error": "서버 처리 중 오류가 발생했습니다."})
