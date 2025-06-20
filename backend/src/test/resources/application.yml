@@ -34,8 +34,13 @@ management:
         include: health,info,metrics
 
 ad:
-  upload-dir: ${AD_UPLOAD_DIR:uploads/ads}
-  base-url: ${AD_BASE_URL:http://localhost:8080/static/ads}
+  # AD_UPLOAD_DIR 환경 변수가 없으면 /app/uploads/ads 로,
+  # 있으면 그 값을 사용합니다.
+  upload-dir: ${AD_UPLOAD_DIR:/app/uploads/ads}
+
+  # AD_BASE_URL 환경 변수가 없으면 아래 URL을,
+  # 있으면 그 값을 사용합니다.
+  base-url:   ${AD_BASE_URL:https://smartcityksva.site/api/ads}
 
 servlet:
   multipart:
