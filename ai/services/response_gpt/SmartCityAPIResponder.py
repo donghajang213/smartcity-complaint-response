@@ -18,12 +18,12 @@ class SmartCityAPIResponder:
             [답변]
             """
         )
-        self.chain = LLMChain(llm=self.llm, prompt=self.prompt)
+        self.chain = LLMChain(llm = self.llm, prompt = self.prompt)
 
     def answer(self, api_results: dict):
         question = api_results["question"]
         api_context = self._format_api_results(api_results["results"])
-        answer = self.chain.run(question=question, api_context=api_context)
+        answer = self.chain.run(question = question, api_context = api_context)
         return {
                 "answer": answer,
                 "sources": api_results["results"]
@@ -43,62 +43,10 @@ class SmartCityAPIResponder:
 
     def _format_single_api_result(self, api_data):
         if hasattr(api_data, "to_string"):
-            return api_data.to_string(index=False)
+            return api_data.to_string(index = False)
         elif isinstance(api_data, dict):
             return "\n".join([f"{k}: {v}" for k, v in api_data.items()])
         elif isinstance(api_data, list):
             return "\n".join([str(item) for item in api_data])
         else:
             return str(api_data)
-
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    import os
-    from langchain_community.chat_models import ChatOpenAI
-
-    load_dotenv()
-
-    # GPT 모델 초기화
-    llm = ChatOpenAI(model="gpt-4o-mini-2024-07-18", temperature=0.7)
-
-    # 예시 API 결과
-    api_results = {
-        "question": "중구 날씨랑 미세먼지 알려줘",
-        "results": [
-            {
-                "entity_results": {
-                    "category": "날씨",
-                    "intent": "날씨",
-                    "entities": [
-                        {"type": "지역", "value": "중구"},
-                        {"type": "기온", "value": "기온"}
-                    ]
-                },
-                "API_results": {
-                    "지역": "중구",
-                    "기온": "26도"
-                }
-            },
-            {
-                "entity_results": {
-                    "category": "환경",
-                    "intent": "미세먼지",
-                    "entities": [
-                        {"type": "지역", "value": "중구"},
-                        {"type": "미세먼지", "value": "미세먼지"}
-                    ]
-                },
-                "API_results": {
-                    "지역": "중구",
-                    "미세먼지": "32"
-                }
-            }
-        ]
-    }
-
-    responder = SmartCityAPIResponder(llm=llm)
-    answer = responder.answer(api_results)
-
-    print("\n🧠 GPT 응답:")
-    print(answer)
