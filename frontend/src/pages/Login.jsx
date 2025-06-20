@@ -63,8 +63,9 @@ function Login() {
     try {
       const result = await login(form);
       localStorage.setItem("jwt", result.token);
+      
       alert("로그인 성공!");
-      navigate("/chatbot");
+      navigate("/main");
     } catch {
       alert("로그인 실패");
     } finally {
@@ -78,7 +79,7 @@ function Login() {
       const result = await loginWithGoogle({ token: credentialResponse.credential });
       localStorage.setItem("jwt", result.token);
       alert("구글 로그인 성공!");
-      navigate("/chatbot");
+      navigate("/main");
     } catch {
       alert("구글 로그인 실패");
     }
@@ -95,7 +96,7 @@ function Login() {
           const res = await loginWithKakao({ token: authObj.access_token });
           localStorage.setItem("jwt", res.token);
           alert("카카오 로그인 성공!");
-          navigate("/chatbot");
+          navigate("/main");
         } catch (err) {
           console.error("카카오 로그인 실패", err);
           alert("카카오 로그인 실패");

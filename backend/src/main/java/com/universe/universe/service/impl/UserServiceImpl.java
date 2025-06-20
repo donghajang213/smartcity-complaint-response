@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,34 +39,11 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
     }
-//    @Override
-//    public User findByEmail(String email) {
-//        return userRepository.findByEmail(email).orElse(null);
-//    }
-//    @Override
-//    public User registerGoogleUser(String email, String name, String phone) {
-//        User user = new User();
-//        user.setEmail(email);
-//        user.setName(name);
-//        user.setPhone(phone);  // phone이 없으면 null 넣어도 됨
-//        return userRepository.save(user);
-//    }
 
-
-
-
-
-//    @Override
-//    public List<User> getPendingAdmins() {
-//        return userRepository.findByRoleAndStatus("ADMIN", "pending");
-//    }
-
-//    @Override
-//    public void approveAdmin(Long id) {
-//        User user = userRepository.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
-//        user.setStatus("allow");
-//        userRepository.save(user);
-//    }
+    @Override
+    public List<com.universe.universe.dto.User> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(entity -> com.universe.universe.dto.User.fromEntity(entity))
+                .collect(Collectors.toList());
+    }
 }
-
