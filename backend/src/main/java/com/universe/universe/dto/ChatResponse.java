@@ -10,8 +10,8 @@ import java.util.Map;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class ChatResponse {
     private Map<String, Object> answer;
     // 에러 메시지를 answer 맵에 넣어 생성하는 생성자

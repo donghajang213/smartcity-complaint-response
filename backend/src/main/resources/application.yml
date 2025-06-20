@@ -1,4 +1,9 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
   datasource:
     url: jdbc:postgresql://localhost:5432/smartcity_db
     username: user
@@ -21,9 +26,26 @@ external:
   fastapi:
     url: http://fastapi:8001/chat
 
+#external:
+#  fastapi:
+#    url: "http://localhost:8001/chat"
+
 recaptcha:
   secret: 6Ld1lmArAAAAAGvarEbptb3-i1gnutfvF3L2w0ub
 
 kakao:
   rest-api-key: 8413a4aab24c3a25cc81eb161bcd7277
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+#ad:
+#  upload-dir: ${AD_UPLOAD_DIR:C:/images}   # Windows 기본값
+#  base-url:  ${AD_BASE_URL:http://localhost:8080/static/ads}
+
+ad:
+  upload-dir: ${AD_UPLOAD_DIR}
+  base-url:  ${AD_BASE_URL}

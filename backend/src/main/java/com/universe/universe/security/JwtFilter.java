@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -20,12 +21,18 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private static final AntPathMatcher matcher = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
+        System.out.println("[JwtFilter] Request URI: " + uri);
+
+        // Authorization 헤더 원본
+        String header = request.getHeader("Authorization");
+        System.out.println("[JwtFilter] Authorization header: " + header);
 
         // ✅ 인증 없이 통과시킬 URL 추가
         if (uri.equals("/api/signup")
@@ -37,7 +44,15 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+        // ✅ 정적 광고 파일은 토큰 검사 안 함
+        if (matcher.match("/static/ads/**", uri)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
+        System.out.println("[JwtFilter] Resolved token: " + token);
+
         if (token != null) {
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.validateTokenAndGetEmail(token);
