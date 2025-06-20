@@ -4,6 +4,9 @@ import com.universe.universe.security.JwtFilter;
 import com.universe.universe.security.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,46 +43,31 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults()) // ✅ CorsConfigurationSource 사용
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 401 발생 시 Basic 챌린지가 아니라 그냥 401만 돌려주도록 설정
                 .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((req, res, authEx) -> {
-                    res.sendError(HttpServletResponse.SC_UNAUTHORIZED, authEx.getMessage());
-                })
-               )
+                        .authenticationEntryPoint((req, res, authEx) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, authEx.getMessage())
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
-                        /* 1) CORS preflight */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        /* 2) 회원가입·로그인 공개 */
                         .requestMatchers(
                                 "/api/signup", "/api/signup/**",
                                 "/api/login",  "/api/login/**",
-                                "/api/auth/**", "api/chat","api/chat/**"
+                                "/api/auth/**", "/api/chat","/api/chat/**"
                         ).permitAll()
-
-                        /* 3) API 문서 */
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-
-                        /* 4) 광고 ― 누구나 접근 가능 ----------------------- */
-                        .requestMatchers(HttpMethod.GET,  "/api/ads/**").permitAll()      // 위치별 조회
-                        .requestMatchers(HttpMethod.POST, "/api/ads/click/**").permitAll()// 클릭 증가
+                        .requestMatchers(HttpMethod.GET,  "/api/ads/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ads/click/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/static/ads/**").permitAll()
-                        /* 5) 관리자 영역 ― 보호 ---------------------------- */
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        /* 6) 나머지는 인증 필요 --------------------------- */
                         .anyRequest().authenticated()
                 )
-
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form.disable());
-//                .httpBasic(Customizer.withDefaults());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -93,7 +81,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ CORS 설정은 여기서 통합
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -105,7 +92,7 @@ public class SecurityConfig {
         ));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));      // ← 여기 추가
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
@@ -115,10 +102,12 @@ public class SecurityConfig {
     }
 
     @Bean
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnMissingBean(name = "corsFilterRegistration")
     public FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
         CorsFilter filter = new CorsFilter(source);
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 높은 우선순위
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
 }
