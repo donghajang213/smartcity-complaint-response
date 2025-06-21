@@ -46,4 +46,10 @@ ad:
   # 환경변수가 없으면 /app/uploads/ads, 있으면 AD_UPLOAD_DIR 값 사용
   upload-dir: ${AD_UPLOAD_DIR:/app/uploads/ads}
   # 환경변수가 없으면 https://smartcityksva.site/api/ads, 있으면 AD_BASE_URL 값 사용
-  base-url:   ${AD_BASE_URL:https://smartcityksva.site/static/ads}
+  base-url:   ${AD_BASE_URL:https://smartcityksva.site/api/ads}
+
+# ───────────────────────────────────────────────────────────────────
+# 구글 OAuth2 설정 추가
+google:
+  oauth2:
+    client-id: 901774638833-hqteoeb52ehvm6he2p12su8k1p64sr2i.apps.googleusercontent.com
