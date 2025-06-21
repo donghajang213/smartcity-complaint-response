@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Connections {
-    private Double current;
-    private String main;
-    private String proxy;
-    private String db;
+    private int current;
+    private int main;
+    private int proxy;
+    private int db;
 }

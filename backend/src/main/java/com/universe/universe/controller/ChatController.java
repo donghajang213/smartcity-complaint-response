@@ -20,6 +20,8 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<?> chat(@RequestBody ChatRequest request) {
+        System.out.println("FastAPI URL: " + fastApiUrl);
+        System.out.println("Request message: " + request.getMessage());
         try {
             // FastAPI 서버로 프록시 요청
             HttpHeaders headers = new HttpHeaders();
@@ -29,6 +31,9 @@ public class ChatController {
             ResponseEntity<ChatResponse> response = restTemplate.postForEntity(fastApiUrl, entity, ChatResponse.class);
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+
+            e.printStackTrace(); // 로그 추가
+
             return ResponseEntity.status(500)
                     .body(new ChatResponse("FastAPI 서버 오류: " + e.getMessage()));
         }
