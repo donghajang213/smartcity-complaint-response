@@ -1,4 +1,4 @@
-name: Deploy FastAPI to EC2
+name: Sync AI code to EC2
 
 on:
   push:
@@ -7,16 +7,16 @@ on:
       - dev_final
       - dev_test
     paths:
-      - 'ai/fastapi_openapi/**'
-      - 'ai/rag_pipeline/**'
+      - 'ai/**'
       - '.github/workflows/deploy-fastapi.yml'
 
 jobs:
-  deploy-fastapi:
+  sync-ai:
     runs-on: ubuntu-latest
 
     env:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      DEPLOY_BRANCH:    ${{ github.ref_name }}
 
     steps:
       - name: Configure AWS Credentials
@@ -26,16 +26,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ap-northeast-2
 
-      - name: Deploy FastAPI via SSM
+      - name: Update AI folder on EC2
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --comment "Deploy FastAPI container" \
-            --parameters '{"commands":[
-              "cd /home/ubuntu/smartcity-complaint-response",
-              "git pull origin dev",
-              "docker compose up -d --build fastapi"
-            ]}' \
+            --comment "Sync ai/ folder on ${{ env.DEPLOY_BRANCH }}" \
+            --parameters "{\"commands\":[\
+            \"if [ ! -d /home/ubuntu/smartcity-complaint-response/.git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git /home/ubuntu/smartcity-complaint-response; fi\",\
+            \"cd /home/ubuntu/smartcity-complaint-response\",\
+            \"git pull origin ${{ env.DEPLOY_BRANCH }} -- ai/\",\
+            \"echo \\\"✔️ ai/ folder is up to date on ${{ env.DEPLOY_BRANCH }}\\\"\"\
+            ]}" \
             --timeout-seconds 300 \
             --region ap-northeast-2
