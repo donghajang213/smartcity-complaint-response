@@ -53,7 +53,7 @@ public class UserController {
     private final CaptchaServiceImpl captchaService; // 추가
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private static final String GOOGLE_CLIENT_ID = "360808269616-fr8sj0ddjvhejb6o9tjulbb11rr276ov.apps.googleusercontent.com";
+    private static final String GOOGLE_CLIENT_ID = "901774638833-hqteoeb52ehvm6he2p12su8k1p64sr2i.apps.googleusercontent.com";
     private JSONObject obj;
 
 
