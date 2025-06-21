@@ -16,6 +16,7 @@ jobs:
 
     env:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      DEPLOY_BRANCH:    ${{ github.ref_name }}
 
     steps:
       - name: Configure AWS Credentials
@@ -30,12 +31,12 @@ jobs:
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --comment "Sync ai/ folder on dev" \
-            --parameters '{"commands":[
-              "if [ ! -d /home/ubuntu/smartcity-complaint-response/.git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git /home/ubuntu/smartcity-complaint-response; fi",
-              "cd /home/ubuntu/smartcity-complaint-response",
-              "git pull origin dev -- ai/", 
-              "echo \"✔️ ai/ folder is up to date\""
-            ]}' \
+            --comment "Sync ai/ folder on ${{ env.DEPLOY_BRANCH }}" \
+            --parameters "{\"commands\":[\
+            \"if [ ! -d /home/ubuntu/smartcity-complaint-response/.git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git /home/ubuntu/smartcity-complaint-response; fi\",\
+            \"cd /home/ubuntu/smartcity-complaint-response\",\
+            \"git pull origin ${{ env.DEPLOY_BRANCH }} -- ai/\",\
+            \"echo \\\"✔️ ai/ folder is up to date on ${{ env.DEPLOY_BRANCH }}\\\"\"\
+            ]}" \
             --timeout-seconds 300 \
             --region ap-northeast-2
