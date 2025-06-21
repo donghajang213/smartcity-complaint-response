@@ -60,53 +60,54 @@
       e.preventDefault();
       if (!form.recaptcha) return alert("reCAPTCHA 인증을 완료해주세요.");
 
-      try {
-        const result = await login(form);
-        localStorage.setItem("token", result.token);
-        alert("로그인 성공!");
-        navigate("/chatbot");
-      } catch {
-        alert("로그인 실패");
-      } finally {
-        if (recaptchaRef.current) recaptchaRef.current.reset();
-      }
-    };
+    try {
+      const result = await login(form);
+      localStorage.setItem("jwt", result.token);
+      
+      alert("로그인 성공!");
+      navigate("/main");
+    } catch {
+      alert("로그인 실패");
+    } finally {
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+    }
+  };
 
-    // ✅ 구글 로그인 성공
-    const handleGoogleSuccess = async (credentialResponse) => {
-      try {
-        const result = await loginWithGoogle({ token: credentialResponse.credential });
-        localStorage.setItem("token", result.token);
-        alert("구글 로그인 성공!");
-        navigate("/chatbot");
-      } catch {
-        alert("구글 로그인 실패");
-      }
-    };
+  // ✅ 구글 로그인 성공
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const result = await loginWithGoogle({ token: credentialResponse.credential });
+      localStorage.setItem("jwt", result.token);
+      alert("구글 로그인 성공!");
+      navigate("/main");
+    } catch {
+      alert("구글 로그인 실패");
+    }
+  };
 
     // ✅ 카카오 로그인
     const handleKakaoLogin = () => {
       if (!window.Kakao) return alert("카카오 SDK 로드 실패");
 
-      window.Kakao.Auth.login({
-        scope: "account_email",
-        success: async (authObj) => {
-          try {
-            const res = await loginWithKakao({ token: authObj.access_token });
-            localStorage.setItem("token", res.token);
-            alert("카카오 로그인 성공!");
-            navigate("/chatbot");
-          } catch (err) {
-            console.error("카카오 로그인 실패", err);
-            alert("카카오 로그인 실패");
-          }
-        },
-        fail: (err) => {
-          console.error("카카오 로그인 오류", err);
+    window.Kakao.Auth.login({
+      scope: "account_email",
+      success: async (authObj) => {
+        try {
+          const res = await loginWithKakao({ token: authObj.access_token });
+          localStorage.setItem("jwt", res.token);
+          alert("카카오 로그인 성공!");
+          navigate("/main");
+        } catch (err) {
+          console.error("카카오 로그인 실패", err);
           alert("카카오 로그인 실패");
-        },
-      });
-    };
+        }
+      },
+      fail: (err) => {
+        console.error("카카오 로그인 오류", err);
+        alert("카카오 로그인 실패");
+      },
+    });
+  };
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-sky-300">
