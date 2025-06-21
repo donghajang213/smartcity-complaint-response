@@ -96,3 +96,11 @@ class CreateRAG:
         else:
             print("DB 생성에 실패하였습니다.")
             return None
+
+if __name__ == "__main__":
+    import os
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(BASE_DIR, "..", "..", "data", "민원데이터.csv")
+    c_rag = CreateRAG(file_path, "답변 날짜")
+    c_rag.create_rag()
