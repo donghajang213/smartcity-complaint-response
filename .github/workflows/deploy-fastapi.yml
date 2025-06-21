@@ -26,33 +26,36 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ap-northeast-2
 
-      # 1) SSM 명령 전송하고 커맨드 ID를 저장
+      # 1) SSM 명령 전송
       - name: Send SSM command
         id: send
         run: |
           CMD_ID=$(aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
+            --document-name AWS-RunShellScript \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --comment "Deploy FastAPI container on dev" \
+            --comment "Deploy FastAPI on dev" \
             --parameters '{"commands":[
               "cd /home/ubuntu/smartcity-complaint-response",
-              "git pull origin dev",
+              "if [ ! -d .git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git .; fi",
+              "git fetch origin dev",
+              "git reset --hard origin/dev",
               "docker compose up -d --build fastapi"
             ]}' \
+            --output text --query "Command.CommandId" \
             --timeout-seconds 300 \
-            --region ap-northeast-2 \
-            --output text --query "Command.CommandId")
+            --region ap-northeast-2)
           echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
 
-      # 2) SSM 커맨드가 완료될 때까지 대기
+      # 2) 완료 대기
       - name: Wait for SSM to finish
+        continue-on-error: true
         run: |
           aws ssm wait command-executed \
             --instance-id "${{ env.EC2_INSTANCE_ID }}" \
             --command-id "${{ steps.send.outputs.command_id }}" \
             --region ap-northeast-2
 
-      # 3) 실행 결과(logs) 조회
+      # 3) 결과 조회
       - name: Get SSM invocation result
         run: |
           aws ssm get-command-invocation \
