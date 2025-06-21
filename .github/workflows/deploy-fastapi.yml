@@ -5,9 +5,10 @@ on:
     branches:
       - dev
       - dev_final
+      - dev_test
     paths:
-      - 'ai/fastapi_openapi/**'
-      - 'ai/rag_pipeline/**'
+      - 'ai/**'                            # ← fastapi_openapi 대신 ai 전체
+      - 'rag/**'                           # ← rag_pipeline 대신 rag 전체
       - '.github/workflows/deploy-fastapi.yml'
 
 jobs:
@@ -16,6 +17,7 @@ jobs:
 
     env:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      DEPLOY_BRANCH:    ${{ github.ref_name }}
 
     steps:
       - name: Configure AWS Credentials
@@ -26,15 +28,40 @@ jobs:
           aws-region:            ap-northeast-2
 
       - name: Deploy FastAPI via SSM
+        id: deploy
         run: |
-          aws ssm send-command \
+          # 1) 배포 브랜치 기준으로 git fetch & reset
+          CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --comment "Deploy FastAPI container" \
-            --parameters '{"commands":[
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --comment "Deploy FastAPI on ${DEPLOY_BRANCH}" \
+            --parameters commands=[
               "cd /home/ubuntu/smartcity-complaint-response",
-              "git pull origin dev",
-              "docker compose up -d --build fastapi"
-            ]}' \
-            --timeout-seconds 300 \
+              "git fetch --all",
+              "git checkout ${DEPLOY_BRANCH}",
+              "git reset --hard origin/${DEPLOY_BRANCH}",
+              "docker compose build fastapi",
+              "docker compose up -d fastapi"
+            ] \
+            --output text --query "Command.CommandId")
+
+          echo "▶ SSM Command ID: $CMD_ID"
+
+          # 2) 실행 완료 대기
+          aws ssm wait command-executed \
+            --instance-id "${EC2_INSTANCE_ID}" \
+            --command-id "$CMD_ID" \
             --region ap-northeast-2
+
+          # 3) 상태 확인
+          INV_STATUS=$(aws ssm get-command-invocation \
+            --instance-id "${EC2_INSTANCE_ID}" \
+            --command-id "$CMD_ID" \
+            --region ap-northeast-2 \
+            --output text --query "Status")
+
+          echo "▶ Deployment status: $INV_STATUS"
+          if [[ "$INV_STATUS" != "Success" ]]; then
+            echo "::error::FastAPI deployment failed with status $INV_STATUS"
+            exit 1
+          fi
