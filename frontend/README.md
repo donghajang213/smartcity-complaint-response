@@ -124,3 +124,9 @@ frontend/
     npm install @react-oauth/google
     npm install react-google-recaptcha
 ---    
+
+## lucide-react 설치
+npm install recharts lucide-react
+
+## classnames 설치
+npm install classnames

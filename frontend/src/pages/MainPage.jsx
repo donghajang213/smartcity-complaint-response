@@ -1,42 +1,104 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import backgroundVideo from "../assets/854325-hd_1280_720_25fps.mp4";
+import React, { useEffect, useState } from 'react';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { useNavigate } from 'react-router-dom';
+import AdBanner from '../components/AdBanner';
 
-export default function HeroSection() {
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  CartesianGrid, LineChart, Line
+} from 'recharts';
+import axios from '../api/auth';
+
+const hourlyData = [
+  { hour: '00', count: 10 },
+  { hour: '01', count: 8 },
+  { hour: '02', count: 5 },
+  { hour: '23', count: 12 },
+];
+
+const monthlyData = [
+  { month: 'Jan', count: 120 },
+  { month: 'Feb', count: 150 },
+  { month: 'Dec', count: 200 },
+];
+
+export default function MainPage() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ role: 'FREE' });
+
+  useEffect(() => {
+    axios.get('/api/user/profile')
+      .then(res => setUser({ role: res.data.role }))
+      .catch(() => {});
+  }, []);
+
+  const goToChatbot = () => navigate('/chatbot');
+  const goToAdmin = () => navigate('/admin/dashboard');
+
   return (
-    <div className="relative h-screen flex items-center justify-center text-white overflow-hidden">
-      {/* 배경 비디오 */}
-      <video
-        autoPlay
-        muted
-        loop
-        className="absolute top-0 left-0 w-full h-full object-cover"
-        src={backgroundVideo}
-        type="video/mp4"
-      />
+    <div className="container mx-auto p-6 space-y-6">
+      {/* 관리자 전용 버튼 */}
+      {user.role === 'ADMIN' && (
+        <Button className="bg-red-600 text-white" onClick={goToAdmin}>
+          관리자 대시보드
+        </Button>
+      )}
 
-      {/* 영상 위 컨텐츠 */}
-      <div className="relative z-10 max-w-3xl text-center px-6 bg-black bg-opacity-40 rounded-md">
-        <h1 className="text-5xl font-extrabold mb-6">
-          AI 챗봇으로 빠르고 정확한 답변을 경험하세요!
-        </h1>
-        <p className="text-lg mb-8">
-          스마트시티 민원 응대를 위한 최신 AI 기술 기반의 자동화 서비스
-        </p>
-        <div className="space-x-4">
-          <Link
-            to="/login"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md transition"
-          >
-            로그인
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-transparent border border-white hover:bg-white hover:text-gray-900 text-white font-semibold py-3 px-6 rounded-md transition"
-          >
-            회원가입
-          </Link>
-        </div>
+      {/* 광고 항상 고정 표시 */}
+      <Card className="rounded-2xl shadow">
+        <CardHeader>
+          <CardTitle>광고 배너</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AdBanner position="main-banner" limit={3} />
+        </CardContent>
+      </Card>
+
+      {/* Hero Section */}
+      <Card className="rounded-2xl shadow p-4">
+        <CardHeader>
+          <CardTitle className="text-xl">SmartCity Chat Dashboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>실시간 챗봇 통계와 다양한 기능을 한눈에 확인하세요.</p>
+          <Button className="mt-4" onClick={goToChatbot}>
+            챗봇으로 이동
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* 통계 시각화 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="rounded-2xl shadow">
+          <CardHeader>
+            <CardTitle>시간대별 질문량</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart width={500} height={300} data={hourlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hour" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" />
+            </BarChart>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl shadow">
+          <CardHeader>
+            <CardTitle>월별 질문 추이</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart width={500} height={300} data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="count" stroke="#8884d8" />
+            </LineChart>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
