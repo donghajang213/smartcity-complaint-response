@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 
 public class Network {
-    private Long averageUsers;
-    private Double avgResponseMs;
+    private int averageUsers;
+    private double avgResponseMs;
     private String status;
 }

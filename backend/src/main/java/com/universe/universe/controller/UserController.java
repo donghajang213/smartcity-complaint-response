@@ -44,6 +44,20 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(
+        origins = {
+                "http://localhost:5173",
+                "https://smartcityksva.site",
+                "https://www.smartcityksva.site"
+        },
+        allowCredentials = "true",
+        allowedHeaders = "*",
+        methods = {
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.OPTIONS
+        }
+)
 @RequiredArgsConstructor
 public class UserController {
 
