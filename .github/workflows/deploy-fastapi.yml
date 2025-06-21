@@ -1,4 +1,4 @@
-name: Deploy FastAPI to EC2
+name: Sync AI code to EC2
 
 on:
   push:
@@ -8,11 +8,10 @@ on:
       - dev_test
     paths:
       - 'ai/**'
-      - 'rag/**'
       - '.github/workflows/deploy-fastapi.yml'
 
 jobs:
-  deploy-fastapi:
+  sync-ai:
     runs-on: ubuntu-latest
 
     env:
@@ -26,40 +25,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ap-northeast-2
 
-      # 1) SSM 명령 전송
-      - name: Send SSM command
-        id: send
+      - name: Update AI folder on EC2
         run: |
-          CMD_ID=$(aws ssm send-command \
-            --document-name AWS-RunShellScript \
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
             --instance-ids "${{ env.EC2_INSTANCE_ID }}" \
-            --comment "Deploy FastAPI on dev" \
+            --comment "Sync ai/ folder on dev" \
             --parameters '{"commands":[
+              "if [ ! -d /home/ubuntu/smartcity-complaint-response/.git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git /home/ubuntu/smartcity-complaint-response; fi",
               "cd /home/ubuntu/smartcity-complaint-response",
-              "if [ ! -d .git ]; then git clone https://github.com/<YOUR_ORG>/smartcity-complaint-response.git .; fi",
-              "git fetch origin dev",
-              "git reset --hard origin/dev",
-              "docker compose up -d --build fastapi"
+              "git pull origin dev -- ai/", 
+              "echo \"✔️ ai/ folder is up to date\""
             ]}' \
-            --output text --query "Command.CommandId" \
             --timeout-seconds 300 \
-            --region ap-northeast-2)
-          echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
-
-      # 2) 완료 대기
-      - name: Wait for SSM to finish
-        continue-on-error: true
-        run: |
-          aws ssm wait command-executed \
-            --instance-id "${{ env.EC2_INSTANCE_ID }}" \
-            --command-id "${{ steps.send.outputs.command_id }}" \
-            --region ap-northeast-2
-
-      # 3) 결과 조회
-      - name: Get SSM invocation result
-        run: |
-          aws ssm get-command-invocation \
-            --instance-id "${{ env.EC2_INSTANCE_ID }}" \
-            --command-id "${{ steps.send.outputs.command_id }}" \
-            --plugin-name "aws:RunShellScript" \
             --region ap-northeast-2
