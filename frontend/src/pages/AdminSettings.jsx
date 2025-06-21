@@ -1,4 +1,3 @@
-// pages/AdminSettings.jsx
 import React, { useEffect, useState } from 'react';
 import { Switch } from '../components/ui/Switch';
 import { Button } from '../components/ui/Button';
@@ -101,7 +100,19 @@ export default function AdminSettings() {
         <h3 className="font-semibold">업로드된 광고</h3>
         {ads.map((ad, index) => (
           <div key={ad.id} className="flex items-center justify-between p-2 border rounded-md">
-            <img src={ad.imageUrl} alt="ad" className="h-16 object-contain" />
+            {ad.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+              <video
+                src={ad.imageUrl}
+                className="h-16 object-contain"
+                controls
+              />
+            ) : (
+              <img
+                src={ad.imageUrl}
+                alt="ad"
+                className="h-16 object-contain"
+              />
+            )}
             <div className="flex-1 px-4">
               <div className="text-sm text-gray-600">{ad.linkUrl}</div>
               <div className="text-xs text-gray-500">위치: {ad.position}</div>
