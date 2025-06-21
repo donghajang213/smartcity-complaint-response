@@ -51,6 +51,16 @@ application-*.yml
 # (application.yml은 버전에 따라 포함시킬지 선택)
 
 # ✅ OS 파일
+# 가상환경
+venv
+
+# 환경파일
+*.env
+
+# cache
+__pycache__
+
+# OS
 .DS_Store
 Thumbs.db
 
@@ -64,3 +74,6 @@ test-output/
 # ✅ backend 빌드 산출물 무시
 /backend/build/
 /backend/out/
+
+*db/
+

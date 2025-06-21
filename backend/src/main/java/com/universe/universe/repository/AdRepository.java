@@ -1,0 +1,13 @@
+package com.universe.universe.repository;
+
+import com.universe.universe.entity.Ad;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface AdRepository extends JpaRepository<Ad, Long> {
+    List<Ad> findAllByOrderByOrderIndexAsc();
+
+    List<Ad> findByPositionOrderByOrderIndexAsc(String position);
+
+}
