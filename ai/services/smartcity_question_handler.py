@@ -76,7 +76,6 @@ def smartcity_question_handler(question: str):
                 api_results["results"].append({"error": str(e)})
 
         if rag_answer:
-            
             category_list = []
             for ent_result in entities["results"]:
                 category_list.append(ent_result["category"])
