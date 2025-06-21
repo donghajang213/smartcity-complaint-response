@@ -7,8 +7,8 @@ on:
       - dev_final
       - dev_test
     paths:
-      - 'ai/**'                            # ← fastapi_openapi 대신 ai 전체
-      - 'rag/**'                           # ← rag_pipeline 대신 rag 전체
+      - 'ai/**'
+      - 'rag/**'
       - '.github/workflows/deploy-fastapi.yml'
 
 jobs:
@@ -30,30 +30,36 @@ jobs:
       - name: Deploy FastAPI via SSM
         id: deploy
         run: |
-          # 1) 배포 브랜치 기준으로 git fetch & reset
+          # JSON 파라미터 문자열 생성
+          PARAMS="{\"commands\":[\
+          \"cd /home/ubuntu/smartcity-complaint-response\",\
+          \"git fetch --all\",\
+          \"git checkout ${DEPLOY_BRANCH}\",\
+          \"git reset --hard origin/${DEPLOY_BRANCH}\",\
+          \"docker compose up -d --build fastapi\"\
+          ]}"
+
+          echo "▶ SSM command parameters: $PARAMS"
+
+          # SSM 커맨드 실행
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --instance-ids "${EC2_INSTANCE_ID}" \
             --comment "Deploy FastAPI on ${DEPLOY_BRANCH}" \
-            --parameters commands=[
-              "cd /home/ubuntu/smartcity-complaint-response",
-              "git fetch --all",
-              "git checkout ${DEPLOY_BRANCH}",
-              "git reset --hard origin/${DEPLOY_BRANCH}",
-              "docker compose build fastapi",
-              "docker compose up -d fastapi"
-            ] \
+            --parameters "$PARAMS" \
+            --timeout-seconds 300 \
+            --region ap-northeast-2 \
             --output text --query "Command.CommandId")
 
           echo "▶ SSM Command ID: $CMD_ID"
 
-          # 2) 실행 완료 대기
+          # 완료 대기
           aws ssm wait command-executed \
             --instance-id "${EC2_INSTANCE_ID}" \
             --command-id "$CMD_ID" \
             --region ap-northeast-2
 
-          # 3) 상태 확인
+          # 상태 조회
           INV_STATUS=$(aws ssm get-command-invocation \
             --instance-id "${EC2_INSTANCE_ID}" \
             --command-id "$CMD_ID" \
