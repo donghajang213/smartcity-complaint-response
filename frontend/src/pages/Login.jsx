@@ -150,11 +150,7 @@
               <SiKakaotalk className="mr-2" /> 카카오 로그인
             </button>
 
-            <div
-              id="naverIdLogin"
-              className="flex justify-center mt-2"
-              style={{ minHeight: "48px" }}
-            />
+  
           </div>
         </div>
       </div>
