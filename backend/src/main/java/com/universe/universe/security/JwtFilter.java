@@ -37,6 +37,9 @@ public class JwtFilter extends OncePerRequestFilter {
         // ✅ 인증 없이 통과시킬 URL 추가
         if (uri.equals("/api/signup")
                 || uri.equals("/api/login")
+                || uri.equals("/api/login/kakao")
+                || uri.equals("/api/login/google")
+                || uri.equals("/api/login/naver")
                 || uri.startsWith("/v3/api-docs")
                 || uri.startsWith("/swagger-ui")
                 || uri.equals("/api/auth/refresh")) {
