@@ -18,6 +18,8 @@ import { FailPage } from "../pages/pay/FailPage";
 import AdminSettings from "../pages/AdminSettings";
 import Unauthorized from "../pages/Unauthorized";
 
+import StatPage from "../pages/stats/StatPage";
+
 export default function Router() {
   return (
     <Routes>
@@ -45,6 +47,9 @@ export default function Router() {
         <Route path="/pay" element={<CheckoutPage />} />
         <Route path="/pay/success" element={<SuccessPage />} />
         <Route path="/pay/fail" element={<FailPage />} />
+
+      {/* 통계 그래프 페이지 */}
+      <Route path="/stats/category" element={<StatPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
         <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
