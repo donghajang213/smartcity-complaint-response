@@ -16,6 +16,7 @@ import { CheckoutPage } from "../pages/pay/CheckoutPage";
 import { SuccessPage } from "../pages/pay/SuccessPage";
 import { FailPage } from "../pages/pay/FailPage";
 import AdminSettings from "../pages/AdminSettings";
+import Unauthorized from "../pages/Unauthorized";
 
 export default function Router() {
   return (
