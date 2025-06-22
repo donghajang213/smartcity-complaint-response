@@ -13,7 +13,7 @@ export default function Header() {
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('jwt');
         if (!token) throw new Error('token 없음');
 
         // ✅ 현재 로그인한 사용자 정보 가져오기
@@ -31,7 +31,7 @@ export default function Header() {
   }, [nav]);
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('jwt');
     if (window.google?.accounts?.id) {
       window.google.accounts.id.disableAutoSelect();
     }
