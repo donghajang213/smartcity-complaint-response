@@ -13,6 +13,7 @@ public interface ChatLogRepository extends JpaRepository<ChatLog, Long> {
         FROM chatlog_categories cc
         JOIN category cat ON cc.category_id = cat.id
         JOIN chat_log cl ON cc.chat_log_id = cl.id
+        WHERE cl.timestamp >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
         GROUP BY cat.name
         ORDER BY count DESC
         """, nativeQuery = true)
