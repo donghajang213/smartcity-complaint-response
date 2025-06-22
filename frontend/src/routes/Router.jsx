@@ -50,6 +50,7 @@ export default function Router() {
       {/* 통계 그래프 페이지 */}
       <Route path="/stats/category" element={<StatPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
   );
 }
