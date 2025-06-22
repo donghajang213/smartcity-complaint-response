@@ -12,7 +12,7 @@ function parseJwt(token) {
 }
 
 export default function PrivateRoute({ element, roles = [] }) {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("jwt");
   if (!token) return <Navigate to="/login" replace />;
 
   const userInfo = parseJwt(token);
