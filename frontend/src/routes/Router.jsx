@@ -45,6 +45,7 @@ export default function Router() {
         <Route path="/pay/success" element={<SuccessPage />} />
         <Route path="/pay/fail" element={<FailPage />} />
         {/* 예: <Route path="/" element={<Home />} /> */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
   );
 }
