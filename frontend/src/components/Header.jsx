@@ -25,7 +25,7 @@ export default function Header() {
         });
       } catch (err) {
         console.warn('사용자 정보 로드 실패', err);
-        nav('/login');
+        // nav('/login');
       }
     })();
   }, [nav]);
@@ -39,20 +39,20 @@ export default function Header() {
   };
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white shadow">
-      <Link to="/chatbot" className="text-2xl font-bold">
-        MyChatService
+    <header className="flex items-center justify-between px-6 py-4 bg-white border-b shadow-sm">
+      <Link to="/chatbot" className="text-xl font-bold text-blue-600 hover:opacity-80 transition">
+        💬 MyChatService
       </Link>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center gap-4 text-sm">
         {user.name && (
-          <div className="text-gray-700">
-            {user.name} ({user.role})
-          </div>
+          <span className="text-gray-600 font-medium">
+            {user.name} <span className="text-gray-400">({user.role})</span>
+          </span>
         )}
         <button
           onClick={logout}
-          className="text-sm text-gray-600 hover:text-gray-900"
+          className="text-gray-500 hover:text-red-500 transition font-medium"
         >
           로그아웃
         </button>
