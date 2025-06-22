@@ -3,6 +3,9 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useNavigate } from 'react-router-dom';
 import AdBanner from '../components/AdBanner';
+import { fetchCategoryStats  } from '../api/statApi';
+import CategoryBarChart from '../components/stats/CategoryBarChart';
+import CategoryPieChart from '../components/stats/CategoryPieChart';
 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -36,6 +39,20 @@ export default function MainPage() {
   const goToChatbot = () => navigate('/chatbot');
   const goToAdmin = () => navigate('/admin/dashboard');
 
+  const [chartData, setChartData] = useState([]);
+  
+  useEffect(() => {
+      const loadData = async () => {
+          try {
+              const data = await fetchCategoryStats();
+              setChartData(data);
+          } catch (error) {
+              console.error("통계 데이터를 불러오는 중 오류 발생:", error);
+          }
+      };
+      loadData();
+  }, []);
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* 관리자 전용 버튼 */}
@@ -62,6 +79,11 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <p>실시간 챗봇 통계와 다양한 기능을 한눈에 확인하세요.</p>
+          <div>
+            <h2>카테고리별 질문 통계</h2>
+            <CategoryBarChart data={chartData} />
+            <CategoryPieChart data={chartData} />
+        </div>
           <Button className="mt-4" onClick={goToChatbot}>
             챗봇으로 이동
           </Button>
