@@ -14,7 +14,7 @@ function AdminDashboard() {
   useEffect(() => {
     const token = localStorage.getItem('jwt');
     if (!token) {
-      navigate('/login');
+       navigate('/login');
       return;
     }
 

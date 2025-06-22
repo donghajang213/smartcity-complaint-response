@@ -1,6 +1,6 @@
-// src/components/ChatInput.jsx
 import { useState } from 'react';
 import axios from '../api/auth.js';
+import { Send } from 'lucide-react'; // 아이콘 추가(optional)
 
 export default function ChatInput({ onSend }) {
   const [text, setText] = useState('');
@@ -17,20 +17,10 @@ export default function ChatInput({ onSend }) {
       const response = res.data.answer;
 
       let assistantMsg = '';
-      // if (typeof response === 'string') {
-      //   // 문자열 응답이면 그대로 출력
-      //   assistantMsg = response;
-      // } else if (response.results && response.results.length > 0) {
-      //   // 여러 개의 응답 (날씨 + 미세먼지 + 버스 + 지하철) 처리
-      //   response.results.forEach(result => {
-      //     const apiResults = result.API_results;
 
-      // 1) RAG 객체 형태로 올 경우, 순수 answer 문자열만 꺼내서 출력
       if (response && response.results && typeof response.results.answer === 'string') {
         assistantMsg = response.results.answer;
-      }
-      // 2) (기존) 배열 형태 legacy 응답 처리 로직
-      else if (response && Array.isArray(response.results)) {
+      } else if (response && Array.isArray(response.results)) {
         response.results.forEach(result => {
           const apiResults = result.API_results;
           if (!Array.isArray(apiResults)) return;
@@ -59,8 +49,7 @@ export default function ChatInput({ onSend }) {
             }
           });
         });
-      }
-      else {
+      } else {
         assistantMsg = '적절한 응답이 없습니다.';
       }
 
@@ -72,23 +61,26 @@ export default function ChatInput({ onSend }) {
   };
 
   return (
-    <div className="flex items-center p-4 bg-white border-t">
-      <textarea
-        className="flex-1 border rounded p-2 h-10 resize-none"
-        placeholder="메시지를 입력하세요..."
-        value={text}
-        onChange={e => setText(e.target.value)}
-        onKeyDown={e =>
-          e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())
-        }
-      />
-      <button
-        className="ml-2 bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        disabled={!text.trim()}
-        onClick={send}
-      >
-        전송
-      </button>
+    <div className="w-full px-4 py-6 bg-white border-t border-gray-200">
+      <div className="flex items-end gap-2 max-w-4xl mx-auto">
+        <textarea
+          className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          rows={1}
+          placeholder="메시지를 입력하세요..."
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e =>
+            e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())
+          }
+        />
+        <button
+          onClick={send}
+          disabled={!text.trim()}
+          className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-40"
+        >
+          <Send size={20} className="transform rotate-[320deg]" />
+        </button>
+      </div>
     </div>
   );
 }
