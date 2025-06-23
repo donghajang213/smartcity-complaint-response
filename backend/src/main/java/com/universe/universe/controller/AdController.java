@@ -63,7 +63,7 @@ public class AdController {
 
     @GetMapping("/position")
     public List<AdDTO> getAdsByPosition(
-            @PathVariable String position,
+            @RequestParam("position") String position,
             @RequestParam(defaultValue = "3") int limit) {
         return adService.getAdsByPosition(position, limit);
     }
