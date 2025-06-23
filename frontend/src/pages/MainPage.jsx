@@ -6,6 +6,8 @@ import AdBanner from '../components/AdBanner';
 import { fetchCategoryStats } from '../api/statApi';
 import CategoryBarChart from '../components/stats/CategoryBarChart';
 import CategoryPieChart from '../components/stats/CategoryPieChart';
+import { fetchHourlyStats } from '../api/statApi';
+import HourlyBarChart from '../components/stats/HourlyBarChart';
 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -30,7 +32,8 @@ const monthlyData = [
 export default function MainPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState({ role: 'FREE' });
-  const [chartData, setChartData] = useState([]);
+  const [categoryChartData, setCategoryChartData] = useState([]);
+  const [hourlyChartData, setHourlyChartData] = useState([]);
 
   useEffect(() => {
     axios.get('/api/user/profile')
@@ -42,9 +45,9 @@ export default function MainPage() {
     const loadData = async () => {
       try {
         const data = await fetchCategoryStats();
-        setChartData(data);
+        setCategoryChartData(data);
       } catch (error) {
-        console.error("통계 데이터를 불러오는 중 오류 발생:", error);
+        console.error("카테고리별 통계 데이터를 불러오는 중 오류 발생:", error);
       }
     };
     loadData();
@@ -52,6 +55,24 @@ export default function MainPage() {
 
   const goToChatbot = () => navigate('/chatbot');
   const goToAdmin = () => navigate('/admin/dashboard');
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await fetchHourlyStats();
+        const currentHour = new Date().getHours();
+        const reordered = [
+          ...data.slice(currentHour + 1),
+          ...data.slice(0, currentHour + 1),
+        ];
+
+        setHourlyChartData(reordered);
+      } catch (error) {
+        console.error("시간대별 통계 데이터를 불러오는 중 오류 발생:", error);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
@@ -77,8 +98,8 @@ export default function MainPage() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CategoryBarChart data={chartData} />
-            <CategoryPieChart data={chartData} />
+            <CategoryBarChart data={categoryChartData} />
+            <CategoryPieChart data={categoryChartData} />
           </div>
 
           <Button
@@ -96,16 +117,8 @@ export default function MainPage() {
           <CardHeader>
             <CardTitle>⏰ 시간대별 질문량</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={hourlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="h-64 px-4 pt-2">
+            <HourlyBarChart data={hourlyChartData} />
           </CardContent>
         </Card>
 
