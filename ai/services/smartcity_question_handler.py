@@ -51,7 +51,7 @@ def smartcity_question_handler(question: str):
                 elif rag_answer is None:
                     # 민원 요청 있었을 때 RAG 기반 GPT 실행
                     rag_answer = smartcity_rag_gpt.answer(question)
-                    
+
             elif ent_result["category"] == "날씨" or ent_result["category"] == "환경":
                 if ent_result["intent"] != "민원 요청":
                     future = executor.submit(call_weather_api_from_entities, ent_result)
@@ -83,7 +83,7 @@ def smartcity_question_handler(question: str):
                     "category": category_list
                 }
                 results_dict["results"] = rag_answer
-            
+
         elif api_results:
             # 민원 요청 없이 OpenAPI 호출만 한 경우
             api_answer = smartcity_api_gpt.answer(api_results)
