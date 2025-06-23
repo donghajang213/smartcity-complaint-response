@@ -1,3 +1,34 @@
+// // vite.config.js (개발용)
+// import { defineConfig } from 'vite';
+// import react from '@vitejs/plugin-react';
+
+// // .env.local   VITE_API_ORIGIN=https://smartcityksva.site
+// const API_ORIGIN = process.env.VITE_API_ORIGIN || 'http://localhost:8080';
+
+// export default defineConfig(({ command }) => ({
+//   plugins: [react()],
+
+//   server: command === 'serve'
+//     ? {
+//         proxy: {
+//           // Spring Boot
+//           '/api': {
+//             target: API_ORIGIN,
+//             changeOrigin: true,
+//             secure: false,    // LetsEncrypt라서 true여도 상관없지만 일단 false
+//           },
+//           // FastAPI (Chat)
+//           '/chat': {
+//             target: API_ORIGIN,
+//             changeOrigin: true,
+//             secure: false,
+//           },
+//         },
+//       }
+//     : undefined,
+// }));
+
+// vite.config.js (운영용)
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -18,3 +49,4 @@ export default defineConfig(({ command, mode }) => ({
     }
   } : undefined
 }))
+
