@@ -130,3 +130,6 @@ npm install recharts lucide-react
 
 ## classnames 설치
 npm install classnames
+
+## markdown 설치
+npm install react-markdown
