@@ -1,9 +1,12 @@
 package com.universe.universe.repository;
 
+import com.universe.universe.dto.DateCount;
 import com.universe.universe.dto.HourCount;
 import com.universe.universe.dto.Throughput;
 import com.universe.universe.dto.StatusValue;
+import com.universe.universe.entity.NetworkStat;
 import com.universe.universe.entity.Registration;
+import com.universe.universe.entity.UptimeStat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
