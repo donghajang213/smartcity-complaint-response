@@ -35,9 +35,12 @@ public class User {
     @Builder.Default
     private Role role = Role.FREE;
 
-    @Column(updatable = true)
+    /** 회원이 마지막으로 로그인한 시각 */
+    @Column
+    private LocalDateTime lastLoginAt;
+
+    @Column(updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
 }
-
