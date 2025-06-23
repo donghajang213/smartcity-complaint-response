@@ -22,20 +22,7 @@ public class ChatLogStatsServiceImpl implements ChatLogStatsService {
 
     @Override
     public List<HourlyStatDto> getHourlyStats() {
-        printHourlyRawDataWithTimestamp();
         return chatLogRepository.getHourlyStats();
-    }
-
-    public void printHourlyRawDataWithTimestamp() {
-        List<Object[]> rawData = chatLogRepository.getHourlyRawDataWithTimestamp();
-
-        for (Object[] row : rawData) {
-            java.sql.Timestamp ts = (java.sql.Timestamp) row[0];
-            Integer hour = ((Number) row[1]).intValue();
-            Long count = ((Number) row[2]).longValue();
-
-            System.out.println("timestamp=" + ts + ", hour=" + hour + ", count=" + count);
-        }
     }
 }
 
