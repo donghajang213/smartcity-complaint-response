@@ -5,9 +5,9 @@ console.log("axios baseURL:", axios.defaults.baseURL);
 console.log("✅ BASE_URL:", import.meta.env.VITE_API_BASE_URL);
 
 // // 개발환경에서만 BASE_URL 지정
-// if (import.meta.env.VITE_API_BASE_URL) {
-//   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
-// }
+if (import.meta.env.VITE_API_BASE_URL) {
+  axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
+}
 
 // 매 요청마다 JWT를 Authorization 헤더에 붙입니다.
 axios.interceptors.request.use(config => {
