@@ -21,14 +21,34 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ 유효성 검사
+    if (!form.name.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      alert("유효한 이메일 형식을 입력해주세요.");
+      return;
+    }
+
+    if (!/^.{8,}$/.test(form.password)) {
+      alert("비밀번호는 최소 8자 이상이어야 합니다.");
+      return;
+    }
+
+    if (!/^\d{10,11}$/.test(form.phone)) {
+      alert("전화번호는 숫자만 입력해주세요. 예: 01012345678");
+      return;
+    }
+
     try {
       const result = await signup(form);
       alert("회원가입 성공!");
-
-      // alert가 끝난 뒤 로그인 화면으로 이동
       setTimeout(() => {
         navigate("/login");
-      }, 100); // 0.1초 딜레이
+      }, 100);
     } catch (err) {
       alert("회원가입 실패");
       console.error("에러 발생:", err);
@@ -72,6 +92,7 @@ function Signup() {
               onChange={handleChange}
               required
               className="w-full border rounded px-3 py-2"
+              placeholder="최소 8자 이상"
             />
           </div>
 
@@ -84,6 +105,7 @@ function Signup() {
               onChange={handleChange}
               required
               className="w-full border rounded px-3 py-2"
+              placeholder="숫자만 입력 (예: 01012345678)"
             />
           </div>
 
