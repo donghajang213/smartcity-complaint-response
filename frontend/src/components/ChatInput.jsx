@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import axios from '../api/auth.js';
 import { Send } from 'lucide-react'; // 아이콘 추가(optional)
-import { useState } from 'react'; // 추가
 
 export default function ChatInput({ onSend }) {
   const [text, setText] = useState('');
