@@ -4,6 +4,7 @@ import com.universe.universe.dto.AdDTO;
 import com.universe.universe.entity.Ad;
 import com.universe.universe.repository.AdRepository;
 import com.universe.universe.service.AdService;
+import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,17 +57,31 @@ public class AdServiceImpl implements AdService {
 
     @Override
     public void uploadAd(MultipartFile file, String linkUrl, String position) throws IOException {
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
+        // 1) uploadDir 을 절대경로 정규화
+        Path uploadPath = Paths.get(uploadDir)
+                .toAbsolutePath() // 절대경로 반환
+                .normalize(); // ".."등을 정리
 
-        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File dest = new File(dir, filename);
-        file.transferTo(dest);
+        // 2) 디렉터리 없으면 생성
+        Files.createDirectories(uploadPath);
+
+        // 3) 파일명 유니크하게 생성 (원본 파일명 sanitize 해도 좋습니다)
+        String original = StringUtils.cleanPath(file.getOriginalFilename());
+        String filename = System.currentTimeMillis() + "_" + original;
+
+        // 4) 저장 대상 경로
+        Path target = uploadPath.resolve(filename);
+
+        // 5) 파일 저장
+        file.transferTo(target.toFile());
+
+        // 6) DB에 저장할 접근용 URL
+        String accessUrl = baseUrl + "/" + filename;
 
         Ad ad = new Ad();
-        ad.setImageUrl(baseUrl + "/" + filename); // 절대 URL 저장
+        ad.setImageUrl(accessUrl); // 절대 URL 저장
         ad.setLinkUrl(linkUrl);
-        ad.setOrderIndex(adRepository.findAll().size());
+        ad.setOrderIndex((int)adRepository.count());
         ad.setClickCount(0);
         ad.setPosition(position);
         adRepository.save(ad);
