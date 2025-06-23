@@ -109,9 +109,23 @@ export default function AdminSettings() {
           <div key={ad.id} className="flex items-center gap-4 p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition">
             <div className="w-24 h-16 flex items-center justify-center overflow-hidden rounded-md bg-gray-50 border">
               {ad.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                <video src={ad.imageUrl} className="h-full object-contain" controls />
-              ) : (
-                <img src={ad.imageUrl} alt="ad" className="h-full object-contain" />
+                <video 
+                src={ ad.imageUrl.replace(
+                          /^(?:https?:\/\/[^\/]+)?\/api\/ads\//,
+                          '/static/ads/'
+                        ) } 
+                        className="h-full object-contain"
+                        controls
+                        />
+                ) : (
+                <img
+                  src={ ad.imageUrl.replace(
+                          /^(?:https?:\/\/[^\/]+)?\/api\/ads\//,
+                          '/static/ads/'
+                        ) }
+                  alt="ad"
+                  className="h-full object-contain"
+                />
               )}
             </div>
             <div className="flex-1">
