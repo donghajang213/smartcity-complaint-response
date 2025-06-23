@@ -43,10 +43,13 @@ management:
         include: health,info,metrics
 
 ad:
-  # 환경변수가 없으면 /app/uploads/ads, 있으면 AD_UPLOAD_DIR 값 사용
-  upload-dir: ${AD_UPLOAD_DIR:/app/uploads/ads}
-  # 환경변수가 없으면 https://smartcityksva.site/api/ads, 있으면 AD_BASE_URL 값 사용
-  base-url:   ${AD_BASE_URL:https://smartcityksva.site/api/ads}
+  upload-dir: /app/uploads/ads
+  base-url:   https://smartcityksva.site/api/ads
+
+# 로컬에서는 현재 프로젝트 루트의 ./ads 폴더를 사용
+#ad:
+#  upload-dir: ./ads
+#  base-url:   http://localhost:8080/api/ads
 
 # ───────────────────────────────────────────────────────────────────
 # 구글 OAuth2 설정 추가
