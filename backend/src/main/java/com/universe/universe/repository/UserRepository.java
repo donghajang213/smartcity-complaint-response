@@ -17,13 +17,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
 
-    // 오늘 가입(또는 로그인)한 사용자 수
-    @Query("SELECT COUNT(u) FROM User u WHERE function('DATE', u.createdAt) = :date")
-    long countByLastLoginDate(@Param("date") LocalDate date);
+    /**
+     * 특정 기간 내 로그인한 사용자 수 (방문자 수)
+     */
+    long countByLastLoginAtBetween(LocalDateTime start, LocalDateTime end);
 
-    // 전체 날짜별 가입자 수 통계
+    /**
+     * 특정 기간 내 신규 가입자 수
+     */
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    /**
+     * 전체 사용자 수를 날짜별로 그룹화하여 통계 조회
+     */
     @Query("""
-        SELECT 
+        SELECT
           function('DATE', u.createdAt) AS date,
           COUNT(u)                       AS count
         FROM User u
@@ -31,16 +39,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ORDER BY function('DATE', u.createdAt)
     """)
     List<DateCount> countByDateGrouped();
-
-    // 특정 시점 이후 시간대별 가입(또는 로그인) 수 통계
-    @Query("""
-        SELECT
-          function('HOUR', u.createdAt) AS hour,
-          COUNT(u)                       AS count
-        FROM User u
-        WHERE u.createdAt >= :since
-        GROUP BY function('HOUR', u.createdAt)
-        ORDER BY function('HOUR', u.createdAt)
-    """)
-    List<HourCount> countByHourSince(@Param("since") LocalDateTime since);
 }

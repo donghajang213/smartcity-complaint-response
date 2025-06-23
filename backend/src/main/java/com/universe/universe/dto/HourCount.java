@@ -9,4 +9,3 @@ public interface HourCount {
     Integer getHour();
     Long    getCount();
 }
-
