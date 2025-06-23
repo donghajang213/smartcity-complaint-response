@@ -14,7 +14,7 @@ def get_region_coordinates(region_name):
     지역 이름(2단계 또는 3단계)을 기반으로 격자 좌표(X, Y)를 반환합니다.
     """
     file_path = 'meteorological_administration.xlsx'
-    df = pd.read_excel(os.path.join(BASE_DIR, "..", "..", "data", file_path), sheet_name = '20241031')
+    df = pd.read_excel(os.path.join(BASE_DIR, "..", "..", "data", file_path), sheet_name ='20241031')
 
     # 3단계(동) 기준으로 먼저 찾기
     matched_dong = df[(df['1단계'] == '서울특별시') & (df['3단계'].str.contains(region_name, na=False))]
@@ -51,7 +51,7 @@ def weather(region):
     base_time = base_time.strftime("%H%M")
 
     # 초단기예보 API 호출
-    url = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
+    url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
     if not WEATHER_API_KEY:
         raise ValueError("❌ WEATHER_API_KEY가 설정되어 있지 않습니다. .env 파일을 확인하세요.")
     params = {
