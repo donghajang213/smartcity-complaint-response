@@ -40,6 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || uri.equals("/api/login/kakao")
                 || uri.equals("/api/login/google")
                 || uri.equals("/api/login/naver")
+                || uri.equals("/api/stats/**")
                 || uri.startsWith("/v3/api-docs")
                 || uri.startsWith("/swagger-ui")
                 || uri.equals("/api/auth/refresh")) {

@@ -9,7 +9,7 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/smartcity_db
+    url: jdbc:postgresql://13.124.223.79:5432/smartcity_db
     username: user
     password: password
     driver-class-name: org.postgresql.Driver
@@ -28,7 +28,7 @@ server:
 
 external:
   fastapi:
-    url: http://fastapi:8001/chat
+    url: http://localhost:8001/chat
 
 recaptcha:
   secret: 6Ld1lmArAAAAAGvarEbptb3-i1gnutfvF3L2w0ub

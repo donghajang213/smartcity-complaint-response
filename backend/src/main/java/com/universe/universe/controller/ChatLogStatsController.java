@@ -16,6 +16,8 @@ public class ChatLogStatsController {
 
     @GetMapping("/category")
     public List<CategoryStatDto> getCategoryStats() {
+        System.out.println("---------------------------------------------"+ chatLogStatsService.getCategoryStats());
         return chatLogStatsService.getCategoryStats();
     }
 }
+
