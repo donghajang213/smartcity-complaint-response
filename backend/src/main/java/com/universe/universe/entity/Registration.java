@@ -20,4 +20,3 @@ public class Registration {
     @Column(nullable = false)
     private LocalDateTime registrationDate;
 }
-
