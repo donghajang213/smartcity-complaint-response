@@ -5,14 +5,10 @@ import com.universe.universe.dto.HourCount;
 import com.universe.universe.dto.StatusValue;
 import com.universe.universe.dto.Throughput;
 import com.universe.universe.repository.StatsRepository;
-import com.universe.universe.repository.UserRepository;
 import com.universe.universe.repository.AccessLogRepository;
 import com.universe.universe.service.StatsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
