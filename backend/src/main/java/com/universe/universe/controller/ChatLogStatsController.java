@@ -1,6 +1,7 @@
 package com.universe.universe.controller;
 
 import com.universe.universe.dto.CategoryStatDto;
+import com.universe.universe.dto.HourlyStatDto;
 import com.universe.universe.service.ChatLogStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,4 +19,7 @@ public class ChatLogStatsController {
     public List<CategoryStatDto> getCategoryStats() {
         return chatLogStatsService.getCategoryStats();
     }
+
+    @GetMapping("/hourly")
+    public List<HourlyStatDto> getHourlyStats() { return chatLogStatsService.getHourlyStats(); }
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @RestController
@@ -101,7 +102,7 @@ public class ChatController {
                         .user(user)
                         .question(question)
                         .answer(answer)
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                         .categories(categorySet)
                         .build();
                 chatLogRepository.save(chatLog);
