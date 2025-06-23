@@ -1,37 +1,45 @@
 import { Link } from "react-router-dom";
-import backgroundVideo from "../assets/854325-hd_1280_720_25fps.mp4";
+import backgroundImage from "../assets/backgroundimage.jpg";
 
 export default function HeroSection() {
   return (
-    <div className="relative h-screen flex items-center justify-center text-white overflow-hidden">
-      {/* 배경 비디오 */}
-      <video
-        autoPlay
-        muted
-        loop
-        className="absolute top-0 left-0 w-full h-full object-cover"
-        src={backgroundVideo}
-        type="video/mp4"
+    <div className="relative h-screen flex items-start justify-center text-white overflow-hidden">
+
+      {/* 배경 이미지 */}
+      <img
+        src={backgroundImage}
+        alt="배경 이미지"
+        className="absolute top-0 left-0 w-full h-full object-cover brightness-[0.4] z-0"
       />
 
-      {/* 영상 위 컨텐츠 */}
-      <div className="relative z-10 max-w-3xl text-center px-6 bg-black bg-opacity-40 rounded-md">
-        <h1 className="text-5xl font-extrabold mb-6">
-          AI 챗봇으로 빠르고 정확한 답변을 경험하세요!
+      {/* 어두운 반투명 오버레이 */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black/50 z-0" />
+
+      {/* 콘텐츠 */}
+      <div className="relative z-20 max-w-3xl text-center px-8 py-8
+                bg-sky-200/60 backdrop-blur-md rounded-3xl shadow-xl border border-white/20
+                mt-12"
+      >
+        <h1 className="text-6xl font-extrabold mb-6 leading-tight text-white drop-shadow-lg">
+          OneCityQ
         </h1>
-        <p className="text-lg mb-8">
-          스마트시티 민원 응대를 위한 최신 AI 기술 기반의 자동화 서비스
+        <p className="text-xl mb-10 text-white drop-shadow-md max-w-lg mx-auto leading-relaxed">
+          민원, 날씨, 교통, 미세먼지까지<br />
+          복잡한 정보, AI 챗봇으로 빠르고 쉽게 해결하세요.
         </p>
-        <div className="space-x-4">
+        <div className="flex justify-center gap-6">
           <Link
             to="/login"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md transition"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 
+                       rounded-full shadow-lg transition-transform transform hover:scale-105 active:scale-95"
           >
             로그인
           </Link>
           <Link
             to="/signup"
-            className="bg-transparent border border-white hover:bg-white hover:text-gray-900 text-white font-semibold py-3 px-6 rounded-md transition"
+            className="bg-white text-gray-900 font-semibold py-3 px-8 rounded-full
+                      border-2 border-white shadow-lg
+                      transition-all duration-300 ease-in-out"
           >
             회원가입
           </Link>
