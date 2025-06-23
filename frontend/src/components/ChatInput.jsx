@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import axios from '../api/auth.js';
 import { Send } from 'lucide-react'; // 아이콘 추가(optional)
+import { useState } from 'react'; // 추가
 
 export default function ChatInput({ onSend }) {
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
   const send = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return; // 로딩 중에 실행 금지
+    setLoading(true); // 로딩 시작
 
     const userMsg = { role: 'user', content: text };
     onSend(userMsg);
@@ -57,6 +60,8 @@ export default function ChatInput({ onSend }) {
     } catch (e) {
       console.error('❌ 에러:', e);
       onSend({ role: 'assistant', content: '서버 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,10 +77,11 @@ export default function ChatInput({ onSend }) {
           onKeyDown={e =>
             e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())
           }
+          disabled={loading}  // 로딩 중 비활성화
         />
         <button
           onClick={send}
-          disabled={!text.trim()}
+          disabled={!text.trim() || loading} // 텍스트 없거나 로딩 중 비활성화
           className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-40"
         >
           <Send size={20} className="transform rotate-[320deg]" />
