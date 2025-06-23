@@ -48,17 +48,20 @@ class SmartCityRAGResponder:
         source_docs = result["source_documents"]
 
         if not source_docs:
-            return {"message": "관련 문서를 찾지 못했습니다."}
+            return {
+                "answer": "죄송합니다. 관련 정보를 찾을 수 없습니다.",
+                "sources": None
+            }
 
         query_vec = self.embedding.embed_query(question)
         top_doc = source_docs[0]
         top_doc_text = source_docs[0].page_content if source_docs else ""
         top_doc_vec = self.embedding.embed_query(top_doc_text) if top_doc_text else [0]
         sim = cosine_similarity([query_vec], [top_doc_vec])[0][0] if top_doc_text else 0
-
+        print(f"문서 유사도 : {sim}")
         if sim < sim_threshold:
             return {
-                "answer": "죄송합니다. 해당 내용에 대해서는 잘 알지 못합니다.",
+                "answer": "죄송합니다. 관련 정보를 찾을 수 없습니다.",
                 "sources": None
             }
         else:
