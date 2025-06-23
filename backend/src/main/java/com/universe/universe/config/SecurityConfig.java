@@ -56,7 +56,8 @@ public class SecurityConfig {
                                 "/api/signup",
                                 "/api/login",
                                 "/api/auth/**",
-                                "/api/chat/**"
+                                "/api/chat/**",
+                                "/api/stats/**"
                         ).permitAll()
 
                         // Swagger/OpenAPI
