@@ -1,4 +1,7 @@
 // src/components/ChatWindow.jsx
+import React from 'react';
+import ReactMarkdown from 'react-markdown'; // 추가
+
 export default function ChatWindow({ messages }) {
   return (
     <div className="flex-1 overflow-auto p-4 space-y-4 flex flex-col">
@@ -14,7 +17,7 @@ export default function ChatWindow({ messages }) {
                 : 'bg-gray-200 self-start text-left'
             }`}
           >
-            {msg.content}
+            <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         ))
       )}
