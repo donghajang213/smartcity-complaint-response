@@ -3,30 +3,14 @@ import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { useNavigate } from "react-router-dom";
 import AdBanner from "../components/AdBanner";
-import { fetchCategoryStats } from "../api/statApi";
-import CategoryBarChart from "../components/stats/CategoryBarChart";
+import { fetchCategoryStats, fetchHourlyStats } from "../api/statApi";
 import CategoryPieChart from "../components/stats/CategoryPieChart";
+import HourlyBarChart from "../components/stats/HourlyBarChart";
 import { Bot } from "lucide-react";
-import { fetchHourlyStats } from '../api/statApi';
-import HourlyBarChart from '../components/stats/HourlyBarChart';
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer
-} from "recharts";
 import axios from "../api/auth";
+import logo from "../assets/logo-Photoroom.png";
 
-const hourlyData = [
-  { hour: "00", count: 10 },
-  { hour: "01", count: 8 },
-  { hour: "02", count: 5 },
-  { hour: "23", count: 12 }
-];
+import { ResponsiveContainer } from "recharts";
 
 export default function MainPage() {
   const navigate = useNavigate();
@@ -53,9 +37,6 @@ export default function MainPage() {
     loadData();
   }, []);
 
-  const goToChatbot = () => navigate('/chatbot');
-  const goToAdmin = () => navigate('/admin/dashboard');
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -65,7 +46,6 @@ export default function MainPage() {
           ...data.slice(currentHour + 1),
           ...data.slice(0, currentHour + 1),
         ];
-
         setHourlyChartData(reordered);
       } catch (error) {
         console.error("시간대별 통계 데이터를 불러오는 중 오류 발생:", error);
@@ -74,11 +54,16 @@ export default function MainPage() {
     loadData();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+  const goToChatbot = () => navigate('/chatbot');
+  const goToAdmin = () => navigate('/admin/dashboard');
 
-        {/* 관리자 전용 버튼 */}
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white relative">
+      
+
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+        
+        {/* 관리자 대시보드 버튼 */}
         {user.role === "ADMIN" && (
           <div className="flex justify-end">
             <Button className="bg-red-600 text-white hover:bg-red-700" onClick={goToAdmin}>
