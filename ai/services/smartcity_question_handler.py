@@ -14,10 +14,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 llm = ChatOpenAI(model="gpt-4o-mini-2024-07-18")
 
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-smartcity_rag_gpt = SmartCityRAGResponder(llm, db_path=os.path.join(BASE_DIR, "response_gpt", "new_db"))
+smartcity_rag_gpt = SmartCityRAGResponder(llm)
 smartcity_api_gpt = SmartCityAPIResponder(llm)
 
 def extract_entities(question: str):
