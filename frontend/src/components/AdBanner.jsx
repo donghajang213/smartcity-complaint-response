@@ -14,19 +14,32 @@ export default function AdBanner({
   const [ads, setAds] = useState([]);
   const [current, setCurrent] = useState(0);
 
+  // auth.js 와 동일한 방식으로 API_BASE 계산
+  const isDev = import.meta.env.MODE === 'development'
+  const API_BASE = isDev
+    ? ''
+    : import.meta.env.VITE_API_ORIGIN || ''
+
   /* 1) 광고 목록 불러오기 --------------------------------------------------- */
   useEffect(() => {
     async function loadAds() {
       try {
         const { data } = await AdsAPI.getAdsByPosition(position, limit);
-        // 상대경로 이미지 URL에 도메인 붙이기
-        const baseUrl = import.meta.env.VITE_AD_BASE_URL || '';
-        const normalized = (data || []).map(ad => ({
-          ...ad,
-          imageUrl: ad.imageUrl.startsWith('http')
-            ? ad.imageUrl
-            : `${baseUrl}${ad.imageUrl}`
-        }));
+        const normalized = (data || []).map(ad => {
+          // 1) raw URL 에서 pathname(경로)만 추출
+          let raw = ad.imageUrl
+          let pathname
+          try {
+            pathname = new URL(raw).pathname
+          } catch {
+            pathname = raw
+          }
+          // 2) /api/ads/ → /static/ads/ 로 교체
+          const staticPath = pathname.replace(/^\/api\/ads\//, '/static/ads/')
+          // 3) dev는 빈 문자열, prod는 도메인 붙여서 최종 URL 생성
+          const url = `${API_BASE}${staticPath}`
+          return { ...ad, imageUrl: url }
+        })
         setAds(normalized);
         setCurrent(0);
       } catch (e) {
@@ -34,7 +47,7 @@ export default function AdBanner({
       }
     }
     if (position) loadAds();
-  }, [position, limit]);
+  }, [position, limit, API_BASE]);
 
   /* 2) 자동 슬라이드 -------------------------------------------------------- */
   useEffect(() => {
