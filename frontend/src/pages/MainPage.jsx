@@ -3,9 +3,10 @@ import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { useNavigate } from "react-router-dom";
 import AdBanner from "../components/AdBanner";
-import { fetchCategoryStats, fetchHourlyStats } from "../api/statApi";
+import { fetchCategoryStats, fetchHourlyStats, fetchKeywordStats } from "../api/statApi";
 import CategoryPieChart from "../components/stats/CategoryPieChart";
 import HourlyBarChart from "../components/stats/HourlyBarChart";
+import KeywordTable from "../components/stats/KeywordTable";
 import { Bot } from "lucide-react";
 import axios from "../api/auth";
 import logo from "../assets/logo-Photoroom.png";
@@ -17,6 +18,9 @@ export default function MainPage() {
   const [user, setUser] = useState({ role: 'FREE' });
   const [categoryChartData, setCategoryChartData] = useState([]);
   const [hourlyChartData, setHourlyChartData] = useState([]);
+  const [keywordData, setKeywordData] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState(""); // "" = 전체
+
 
   useEffect(() => {
     axios
@@ -25,6 +29,7 @@ export default function MainPage() {
       .catch(() => {});
   }, []);
 
+  // 카테고리별 파이 차트
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -37,6 +42,7 @@ export default function MainPage() {
     loadData();
   }, []);
 
+  // 시간대별 질문량
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -53,6 +59,24 @@ export default function MainPage() {
     };
     loadData();
   }, []);
+
+  // 워드 클라우드
+  // 카테고리 선택 변경 핸들러
+  const handleCategoryChange = (e) => {
+    setCategoryFilter(e.target.value);
+  };
+  // 카테고리별 워드클라우드 데이터 호출
+  useEffect(() => {
+  const loadKeywords = async () => {
+    try {
+      const data = await fetchKeywordStats(categoryFilter);
+      setKeywordData(data);
+    } catch (error) {
+      console.error("키워드 데이터 불러오기 실패:", error);
+    }
+  };
+  loadKeywords();
+}, [categoryFilter]);
 
   const goToChatbot = () => navigate('/chatbot');
   const goToAdmin = () => navigate('/admin/dashboard');
@@ -105,18 +129,30 @@ export default function MainPage() {
                 <CategoryPieChart data={categoryChartData} />
               </div>
 
-              {/* 시간대별 질문량 */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">시간대별 질문량</h3>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <HourlyBarChart data={hourlyChartData} />
-                  </ResponsiveContainer>
+              {/* 워드 클라우드 */}
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">카테고리별 주요 키워드</h3>
+                  <label htmlFor="category-select" className="mr-2 font-semibold text-gray-700">카테고리 선택:</label>
+                  <select
+                  id="category-select"
+                  value={categoryFilter}
+                  onChange={handleCategoryChange}
+                  className="border rounded px-2 py-1"
+                  >
+                  <option value="">전체</option>
+                  <option value="교통">교통</option>
+                  <option value="환경">환경</option>
+                  <option value="시설">시설</option>
+                  <option value="정책">정책</option>
+                  </select>
+
+                  <div className="h-72">
+                  <KeywordTable keywords={keywordData} />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+            </Card>
 
         {/* 광고 배너 */}
         <div className="mt-12 border-t pt-8">
