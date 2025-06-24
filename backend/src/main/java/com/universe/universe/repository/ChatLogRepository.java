@@ -2,6 +2,7 @@ package com.universe.universe.repository;
 
 import com.universe.universe.dto.CategoryStatDto;
 import com.universe.universe.dto.HourlyStatDto;
+import com.universe.universe.dto.KeywordStatDto;
 import com.universe.universe.entity.ChatLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,15 +43,4 @@ public interface ChatLogRepository extends JpaRepository<ChatLog, Long> {
           hours.hour;
         """, nativeQuery = true)
     List<HourlyStatDto> getHourlyStats();
-
-    @Query(value = """
-        SELECT
-          timestamp,
-          EXTRACT(HOUR FROM timestamp) AS hour,
-          COUNT(*) OVER (PARTITION BY EXTRACT(HOUR FROM timestamp)) AS count_per_hour
-        FROM chat_log
-        WHERE timestamp >= NOW() - INTERVAL '24 hours'
-        ORDER BY timestamp
-        """, nativeQuery = true)
-    List<Object[]> getHourlyRawDataWithTimestamp();
 }
