@@ -37,10 +37,12 @@ def smartcity_question_handler(question: str):
     }
     rag_answer = None
 
+    # 일상 대화일 때 처리
     if entities["results"][0]["category"] == "일상 대화":
         print("GPT와 일상 대화 시작")
         results_dict["results"] = chat_gpt.answer(question)
         return results_dict
+    # 교통, 날씨 등의 공공 API 정보 필요할 때 + RAG 기반 민원 질문 처리
     with ThreadPoolExecutor() as executor:
         futures = []
         for ent_result in entities["results"]:
@@ -85,10 +87,10 @@ def smartcity_question_handler(question: str):
             category_list = []
             for ent_result in entities["results"]:
                 category_list.append(ent_result["category"])
-                rag_answer["API_results"] = {
-                    "category": category_list
-                }
-                results_dict["results"] = rag_answer
+            rag_answer["entity_results"] = {
+                "category": category_list
+            }
+            results_dict["results"] = rag_answer
             
         elif api_results:
             # 민원 요청 없이 OpenAPI 호출만 한 경우
