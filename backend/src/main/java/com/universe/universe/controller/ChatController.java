@@ -60,10 +60,10 @@ public class ChatController {
             Map<String, Object> results = (Map<String, Object>) answerMap.get("results");
             String answer = (String) results.get("answer");
 
-            Map<String, Object> apiResults = (Map<String, Object>) results.get("API_results");
+            Map<String, Object> entityResults = (Map<String, Object>) results.get("entity_results");
             List<String> categories = Collections.emptyList();
-            if (apiResults != null) {
-                categories = (List<String>) apiResults.get("category");
+            if (entityResults != null) {
+                categories = (List<String>) entityResults.get("category");
             }
 
             // sources가 있고, 그 안에 content 또는 metadata가 존재할 경우만 저장
