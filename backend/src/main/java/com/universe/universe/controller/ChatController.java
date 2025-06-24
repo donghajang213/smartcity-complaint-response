@@ -4,9 +4,11 @@ import com.universe.universe.dto.ChatRequest;
 import com.universe.universe.dto.ChatResponse;
 import com.universe.universe.entity.Category;
 import com.universe.universe.entity.ChatLog;
+import com.universe.universe.entity.Keyword;
 import com.universe.universe.entity.User;
 import com.universe.universe.repository.CategoryRepository;
 import com.universe.universe.repository.ChatLogRepository;
+import com.universe.universe.repository.KeywordRepository;
 import com.universe.universe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -34,6 +37,7 @@ public class ChatController {
     private final ChatLogRepository chatLogRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final KeywordRepository keywordRepository;
 
     @PostMapping
     public ResponseEntity<?> chat(@RequestBody ChatRequest request) {
@@ -53,10 +57,8 @@ public class ChatController {
             }
 
             Map<String, Object> answerMap = chatResponse.getAnswer();
-
             // question, answer 추출
             String question = (String) answerMap.get("question");
-
             Map<String, Object> results = (Map<String, Object>) answerMap.get("results");
             String answer = (String) results.get("answer");
 
@@ -86,6 +88,7 @@ public class ChatController {
                 User user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
+                // 카테고리별 채팅 로그
                 Set<Category> categorySet = new HashSet<>();
                 if (categories != null) {
                     for (String categoryName : categories) {
@@ -106,13 +109,37 @@ public class ChatController {
                         .categories(categorySet)
                         .build();
                 chatLogRepository.save(chatLog);
+
+                // 키워드 저장
+                System.out.println("\n\n\n\nkewords 나오라구");
+                List<Map<String, Object>> keywordCounts = (List<Map<String, Object>>) results.get("keywords_counts");
+
+                if (keywordCounts != null) {
+                    for (Map<String, Object> keywordData : keywordCounts) {
+                        String keywordText = (String) keywordData.get("keyword");
+
+                        // "서울"이 포함된 키워드는 저장하지 않음
+                        if (keywordText.contains("서울")) {
+                            continue;
+                        }
+
+                        int keywordCount = ((Number) keywordData.get("count")).intValue();
+
+                        Keyword keywordEntity = Keyword.builder()
+                                .text(keywordText)
+                                .count(keywordCount)
+                                .chatLog(chatLog)
+                                .build();
+                        keywordRepository.save(keywordEntity);
+
+                        System.out.println("✅ 저장된 키워드: " + keywordText + " (count: " + keywordCount + ")");
+                    }
+                }
             }
 
             return ResponseEntity.ok(chatResponse);
         } catch (Exception e) {
-
             e.printStackTrace(); // 로그 추가
-
             return ResponseEntity.status(500)
                     .body(new ChatResponse("FastAPI 서버 오류: " + e.getMessage()));
         }
