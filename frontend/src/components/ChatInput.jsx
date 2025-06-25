@@ -7,17 +7,24 @@ export default function ChatInput({ onSend }) {
   const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
   const send = async () => {
-    if (!text.trim() || loading) return; // 로딩 중에 실행 금지
-    setLoading(true); // 로딩 시작
+    if (!text.trim() || loading) return;
+    setLoading(true);
 
-    const userMsg = { role: 'user', content: text };
+    // 사용자 메시지에 고유 id 부여
+    const userId = Date.now();
+    const userMsg = { role: 'user', content: text, id: userId };
     onSend(userMsg);
     setText('');
+
+    // 생성중 메시지는 사용자 메시지와 다른 id로 부여 (예: +1)
+    const pendingId = userId + 1;
+    const pendingMsg = { role: 'assistant', content: '생성중...', id: pendingId };
+    onSend(pendingMsg);
 
     try {
       const res = await axios.post('/api/chat', { message: text });
       const response = res.data.answer;
-
+  
       let assistantMsg = '';
 
       if (response && response.results && typeof response.results.answer === 'string') {
@@ -55,10 +62,10 @@ export default function ChatInput({ onSend }) {
         assistantMsg = '적절한 응답이 없습니다.';
       }
 
-      onSend({ role: 'assistant', content: assistantMsg.trim() });
+      onSend({ role: 'assistant', content: assistantMsg.trim(), replaceId: pendingId });
     } catch (e) {
       console.error('❌ 에러:', e);
-      onSend({ role: 'assistant', content: '서버 오류가 발생했습니다.' });
+      onSend({ role: 'assistant', content: '서버 오류가 발생했습니다.', replaceId: pendingId });
     } finally {
       setLoading(false);
     }

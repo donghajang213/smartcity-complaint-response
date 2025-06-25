@@ -9,7 +9,20 @@ import AdBanner from '../components/AdBanner';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([]);
-  const handleSend = msg => setMessages(prev => [...prev, msg]);
+  const handleSend = (msg) => {
+    setMessages(prev => {
+      if (msg.replaceId) {
+        return prev.map(m =>
+          m.id === msg.replaceId
+            ? { ...msg, id: msg.replaceId }
+            : m
+        );
+      }
+      const id = msg.id || Date.now();
+      return [...prev, { ...msg, id }];
+    });
+  };
+
   const resetChat = () => setMessages([]);
   const user = { role: 'FREE' };
 
