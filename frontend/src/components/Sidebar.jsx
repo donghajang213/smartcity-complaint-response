@@ -42,7 +42,7 @@ export default function Sidebar({ onNewChat, user }) {
           <div className="absolute top-2 left-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-medium">
             광고
           </div>
-          <AdBanner position="chat-left-bottom" limit={1} />
+          <AdBanner position="CHAT_SIDEBAR" limit={1} />
         </div>
       {/* ✅ 하단 영역 */}
       <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
