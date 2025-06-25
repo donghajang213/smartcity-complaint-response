@@ -4,6 +4,9 @@ from .weather_call import call_weather_api_from_entities
 from langchain_community.chat_models import ChatOpenAI
 from .response_gpt import SmartCityRAGResponder, SmartCityAPIResponder, ChatResponder
 
+from .ExtractKeywords import KeywordExtractor
+from collections import Counter
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
@@ -17,6 +20,8 @@ llm = ChatOpenAI(model="gpt-4o-mini-2024-07-18")
 smartcity_rag_gpt = SmartCityRAGResponder(llm)
 smartcity_api_gpt = SmartCityAPIResponder(llm)
 chat_gpt = ChatResponder(llm)
+
+extractor = KeywordExtractor()
 
 def extract_entities(question: str):
     extractor = ExtractEntities(api_key=GOOGLE_API_KEY)
@@ -91,6 +96,13 @@ def smartcity_question_handler(question: str):
                 "category": category_list
             }
             results_dict["results"] = rag_answer
+            keywords = extractor.extract(question)
+            if keywords:
+                freq = Counter(keywords).most_common()
+                keywords_counts = [{"keyword": k, "count": c} for k, c in freq]
+                results_dict["results"]["keywords_counts"] = keywords_counts
+            else:
+                results_dict["results"]["keywords_counts"] = []
             
         elif api_results:
             # 민원 요청 없이 OpenAPI 호출만 한 경우
