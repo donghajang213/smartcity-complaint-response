@@ -4,6 +4,9 @@ from .weather_call import call_weather_api_from_entities
 from langchain_community.chat_models import ChatOpenAI
 from .response_gpt import SmartCityRAGResponder, SmartCityAPIResponder, ChatResponder
 
+from .ExtractKeywords import KeywordExtractor
+from collections import Counter
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
@@ -17,6 +20,8 @@ llm = ChatOpenAI(model="gpt-4o-mini-2024-07-18")
 smartcity_rag_gpt = SmartCityRAGResponder(llm)
 smartcity_api_gpt = SmartCityAPIResponder(llm)
 chat_gpt = ChatResponder(llm)
+
+extractor = KeywordExtractor()
 
 def extract_entities(question: str):
     extractor = ExtractEntities(api_key=GOOGLE_API_KEY)
@@ -37,10 +42,12 @@ def smartcity_question_handler(question: str):
     }
     rag_answer = None
 
+    # 일상 대화일 때 처리
     if entities["results"][0]["category"] == "일상 대화":
         print("GPT와 일상 대화 시작")
         results_dict["results"] = chat_gpt.answer(question)
         return results_dict
+    # 교통, 날씨 등의 공공 API 정보 필요할 때 + RAG 기반 민원 질문 처리
     with ThreadPoolExecutor() as executor:
         futures = []
         for ent_result in entities["results"]:
@@ -85,10 +92,17 @@ def smartcity_question_handler(question: str):
             category_list = []
             for ent_result in entities["results"]:
                 category_list.append(ent_result["category"])
-                rag_answer["API_results"] = {
-                    "category": category_list
-                }
-                results_dict["results"] = rag_answer
+            rag_answer["entity_results"] = {
+                "category": category_list
+            }
+            results_dict["results"] = rag_answer
+            keywords = extractor.extract(question)
+            if keywords:
+                freq = Counter(keywords).most_common()
+                keywords_counts = [{"keyword": k, "count": c} for k, c in freq]
+                results_dict["results"]["keywords_counts"] = keywords_counts
+            else:
+                results_dict["results"]["keywords_counts"] = []
 
         elif api_results:
             # 민원 요청 없이 OpenAPI 호출만 한 경우

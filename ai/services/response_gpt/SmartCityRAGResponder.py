@@ -11,9 +11,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class SmartCityRAGResponder:
-    def __init__(self, llm, db_path = os.path.join(BASE_DIR, "no_chunk_db"), collection_name = "qa3_db"):
-        self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-        # self.embedding = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
+    def __init__(self, llm, db_path = os.path.join(BASE_DIR, "new_db"), collection_name = "qa2_db"):
+        # self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.embedding = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
         self.llm = llm
         self.db = Chroma(
             embedding_function = self.embedding,
@@ -42,7 +42,7 @@ class SmartCityRAGResponder:
             chain_type_kwargs = {"prompt": prompt}
         )
 
-    def answer(self, question, sim_threshold=0.7):
+    def answer(self, question, sim_threshold = 0.65):
         result = self.qa_chain(question)
         answer = result["result"]
         source_docs = result["source_documents"]
