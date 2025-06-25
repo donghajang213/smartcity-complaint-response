@@ -5,3 +5,4 @@ from .weatherAPI import *
 from .trafficAPI import *
 from .weather_call import *
 from .response_gpt import SmartCityAPIResponder, SmartCityRAGResponder, ChatResponder
+from .ExtractKeywords import *
