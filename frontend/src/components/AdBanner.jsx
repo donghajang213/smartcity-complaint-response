@@ -24,7 +24,13 @@ export default function AdBanner({
   useEffect(() => {
     async function loadAds() {
       try {
-        const { data } = await AdsAPI.getAdsByPosition(position, limit);
+        //const { data } = await AdsAPI.getAdsByPosition(position, limit);
+        let { data } = await AdsAPI.getAdsByPosition(position, limit);
+        if ((!data || data.length === 0) && position !== 'MAIN_BANNER') {
+          console.warn(`No ads for "${position}", falling back to MAIN_BANNER`);
+          const fallback = await AdsAPI.getAdsByPosition('MAIN_BANNER', limit);
+          data = fallback.data;
+        }
         const normalized = (data || []).map(ad => {
           // 1) raw URL 에서 pathname(경로)만 추출
           let raw = ad.imageUrl
