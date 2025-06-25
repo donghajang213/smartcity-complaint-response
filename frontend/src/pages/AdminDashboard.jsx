@@ -75,9 +75,6 @@ function AdminDashboard() {
               <TotalUsersChart />
             </div>
             <div className="p-4 bg-sky-50 rounded shadow">
-              <TodaysAccessorChart />
-            </div>
-            <div className="p-4 bg-sky-50 rounded shadow">
               <NewRegistrationChart />
             </div>
           </section>
