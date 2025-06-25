@@ -61,10 +61,10 @@ function AdminDashboard() {
               <h2 className="text-lg font-medium">총 사용자 수</h2>
               <p className="text-2xl font-bold mt-2">{dashboardData.totalUsers.toLocaleString()}명</p>
             </div>
-            <div className="p-4 bg-sky-50 rounded shadow">
+{/*             <div className="p-4 bg-sky-50 rounded shadow">
               <h2 className="text-lg font-medium">오늘의 접속자</h2>
               <p className="text-2xl font-bold mt-2">{dashboardData.todayVisitors.toLocaleString()}명</p>
-            </div>
+            </div> */}
             <div className="p-4 bg-sky-50 rounded shadow">
               <h2 className="text-lg font-medium">신규 등록</h2>
               <p className="text-2xl font-bold mt-2">{dashboardData.newRegistrations.toLocaleString()}건</p>
