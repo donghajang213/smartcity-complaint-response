@@ -6,8 +6,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_air_quality(sido_name='서울', region=None):
     # 동 → 구 변환을 위한 엑셀 불러오기
-    file_path = '기상청.xlsx'
-    df_loc = pd.read_excel(os.path.join(BASE_DIR, "..", "..", "data", file_path), sheet_name='최종 업데이트 파일_20241031')
+    file_path = 'meteorological_administration.xlsx'
+    df_loc = pd.read_excel(os.path.join(BASE_DIR, "..", "..", "data", file_path), sheet_name='20241031')
 
     gu_name = region  # 일단 기본값은 입력값
 
@@ -19,7 +19,7 @@ def get_air_quality(sido_name='서울', region=None):
 
     # 미세먼지 API 호출
     service_key = "vlFqNOMGHQuVJ6GoaP8C99d89CrkizjL/eMTJtgiLYQVr9Sbmo0CKfDHKR/6WhBptBwMDguCzQQxFMZHhKxSCw=="
-    endpoint = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty"
+    endpoint = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty"
     params = {
         'serviceKey': service_key,
         'returnType': 'json',

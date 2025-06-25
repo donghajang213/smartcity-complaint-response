@@ -61,7 +61,7 @@ def smartcity_question_handler(question: str):
                     # 민원 요청 있었을 때 RAG 기반 GPT 실행
                     print("GPT와 교통 민원 대화 시작")
                     rag_answer = smartcity_rag_gpt.answer(question)
-                    
+
             elif ent_result["category"] == "날씨" or ent_result["category"] == "환경":
                 if ent_result["intent"] != "민원 요청":
                     print("날씨 또는 미세먼지 API 불러오기")
@@ -103,7 +103,7 @@ def smartcity_question_handler(question: str):
                 results_dict["results"]["keywords_counts"] = keywords_counts
             else:
                 results_dict["results"]["keywords_counts"] = []
-            
+
         elif api_results:
             # 민원 요청 없이 OpenAPI 호출만 한 경우
             print("GPT와 공공 API 관련 대화 시작")
