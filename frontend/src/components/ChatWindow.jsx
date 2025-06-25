@@ -1,6 +1,5 @@
-// src/components/ChatWindow.jsx
 import React from 'react';
-import ReactMarkdown from 'react-markdown'; // 추가
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatWindow({ messages }) {
   return (
@@ -8,16 +7,21 @@ export default function ChatWindow({ messages }) {
       {messages.length === 0 ? (
         <div className="text-gray-500 italic">새로운 대화를 시작해 보세요.</div>
       ) : (
-        messages.map((msg, i) => (
+        messages.map((msg) => (
           <div
-            key={i}
+            key={msg.id} // ✅ 고유 ID로 메시지 식별
             className={`max-w-lg p-3 rounded-lg whitespace-pre-wrap shadow ${
               msg.role === 'user'
                 ? 'bg-blue-100 self-end text-right'
                 : 'bg-gray-200 self-start text-left'
             }`}
           >
-            <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {/* ✅ content가 없을 경우 '생성중...' */}
+            {msg.content?.trim() ? (
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
+            ) : (
+              <span className="text-gray-400 italic">생성중...</span>
+            )}
           </div>
         ))
       )}
