@@ -144,7 +144,7 @@ export default function MainPage() {
                   <option value="환경">환경</option>
                   <option value="시설">시설</option>
                   <option value="정책">정책</option>
-                  <option value="정책">행정</option>
+                  <option value="행정">행정</option>
                   </select>
 
                   <div className="h-72">
