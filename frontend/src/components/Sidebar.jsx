@@ -47,15 +47,7 @@ export default function Sidebar({ onNewChat, user }) {
       {/* ✅ 하단 영역 */}
       <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
         {/* 업그레이드 버튼 (PRO 전용) */}
-        {user?.role !== 'PRO' && (
-          <button
-            onClick={() => nav('/subscribe')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-md text-sm font-semibold hover:opacity-90 transition shadow"
-          >
-            <Rocket size={16} />
-            PRO 업그레이드
-          </button>
-        )}
+   
 
         
       </div>

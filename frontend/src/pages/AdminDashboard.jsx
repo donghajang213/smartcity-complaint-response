@@ -76,9 +76,9 @@ function AdminDashboard() {
             <div className="p-4 bg-sky-50 rounded shadow">
               <TotalUsersChart />
             </div>
-            <div className="p-4 bg-sky-50 rounded shadow">
+            {/* <div className="p-4 bg-sky-50 rounded shadow">
               <TodaysAccessorChart />
-            </div>
+            </div> */}
             <div className="p-4 bg-sky-50 rounded shadow">
               <NewRegistrationChart />
             </div>
