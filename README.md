@@ -4,7 +4,7 @@
 ## 팀원 구성
 | 장동하 | 정구일 | 조선아 |
 |:---:|:---:|:---:|
-|<a href='https://github.com/donghajang213'> <img src='https://avatars.githubusercontent.com/u/117894209?v=4' width='300'> <br> @donghajang213 </a> | <a href='https://github.com/guil221'> <img src='https://github.com/suusuu00/SESAC-team2/assets/124228791/a7bc9554-fa4a-4705-a3a6-d1c05d897cc4' width='300'> <br> @guil221 </a> | <a href='https://github.com/suusuu00'> <img src='https://github.com/suusuu00/SESAC-team2/assets/124228791/43413408-df69-4377-b599-a0396aad71d1' width='300'> <br> @suusuu00 </a> |
+|<a href='https://github.com/donghajang213'> <img src='https://avatars.githubusercontent.com/u/117894209?v=4' width='300'> <br> @donghajang213 </a> | <a href='https://github.com/guil221'> <img src='https://github.com/suusuu00/SESAC-team2/assets/124228791/a7bc9554-fa4a-4705-a3a6-d1c05d897cc4' width='300'> <br> @guil221 </a> | <a href='https://github.com/sunaaa114'> <img src='https://github.com/suusuu00/SESAC-team2/assets/124228791/43413408-df69-4377-b599-a0396aad71d1' width='300'> <br> @sunaaa114 </a> |
 
 # 스마트시티 민원 챗봇
 <p align='center'>
