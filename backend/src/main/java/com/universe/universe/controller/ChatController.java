@@ -111,7 +111,6 @@ public class ChatController {
                 chatLogRepository.save(chatLog);
 
                 // 키워드 저장
-                System.out.println("\n\n\n\nkewords 나오라구");
                 List<Map<String, Object>> keywordCounts = (List<Map<String, Object>>) results.get("keywords_counts");
 
                 if (keywordCounts != null) {
