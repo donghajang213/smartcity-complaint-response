@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 
-st.title("🚇 지하철 도착 정보 챗봇")
+st.title("🚇 스마트시티 민원 챗봇")
 
 st.markdown("서울역, 강남역 등의 도착 시간을 물어보세요!")
 

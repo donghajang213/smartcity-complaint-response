@@ -11,8 +11,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class SmartCityRAGResponder:
-    def __init__(self, llm, db_path = os.path.join(BASE_DIR, "db"), collection_name = "qa_db"):
-        self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    def __init__(self, llm, db_path = os.path.join(BASE_DIR, "new_db"), collection_name = "qa2_db"):
+        # self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.embedding = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
         self.llm = llm
         self.db = Chroma(
             embedding_function = self.embedding,
@@ -41,23 +42,26 @@ class SmartCityRAGResponder:
             chain_type_kwargs = {"prompt": prompt}
         )
 
-    def answer(self, question, sim_threshold=0.45):
+    def answer(self, question, sim_threshold = 0.65):
         result = self.qa_chain(question)
         answer = result["result"]
         source_docs = result["source_documents"]
 
         if not source_docs:
-            return {"message": "관련 문서를 찾지 못했습니다."}
+            return {
+                "answer": "죄송합니다. 관련 정보를 찾을 수 없습니다.",
+                "sources": None
+            }
 
         query_vec = self.embedding.embed_query(question)
         top_doc = source_docs[0]
         top_doc_text = source_docs[0].page_content if source_docs else ""
         top_doc_vec = self.embedding.embed_query(top_doc_text) if top_doc_text else [0]
         sim = cosine_similarity([query_vec], [top_doc_vec])[0][0] if top_doc_text else 0
-
+        print(f"문서 유사도 : {round(sim, 3)}")
         if sim < sim_threshold:
             return {
-                "answer": "죄송합니다. 해당 내용에 대해서는 잘 알지 못합니다.",
+                "answer": "죄송합니다. 관련 정보를 찾을 수 없습니다.",
                 "sources": None
             }
         else:
