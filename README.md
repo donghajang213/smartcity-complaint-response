@@ -1,4 +1,4 @@
-# OneCityQ
+# smartcity-complaint-response
 - AI 응용 서비스 플랫폼 구축/운용 실무 교육 - (주)한국스마트빌리지협회
 - 3팀 OneCityQ (챗봇 하나로 묻고 답하는 스마트시티)
 ## 팀원 구성
