@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import axios from '../api/auth.js';
+import { Send } from 'lucide-react'; // 아이콘 추가(optional)
+
+export default function ChatInput({ onSend }) {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
+
+  const send = async () => {
+    if (!text.trim() || loading) return;
+    setLoading(true);
+
+    // 사용자 메시지에 고유 id 부여
+    const userId = Date.now();
+    const userMsg = { role: 'user', content: text, id: userId };
+    onSend(userMsg);
+    setText('');
+
+    // 생성중 메시지는 사용자 메시지와 다른 id로 부여 (예: +1)
+    const pendingId = userId + 1;
+    const pendingMsg = { role: 'assistant', content: '생성중...', id: pendingId };
+    onSend(pendingMsg);
+
+    try {
+      const res = await axios.post('/api/chat', { message: text });
+      const response = res.data.answer;
+  
+      let assistantMsg = '';
+
+      if (response && response.results && typeof response.results.answer === 'string') {
+        assistantMsg = response.results.answer;
+      } else if (response && Array.isArray(response.results)) {
+        response.results.forEach(result => {
+          const apiResults = result.API_results;
+          if (!Array.isArray(apiResults)) return;
+
+          apiResults.forEach(section => {
+            if (section.type === '날씨') {
+              assistantMsg += '🌤 날씨 정보:\n';
+              assistantMsg += section.data
+                .map(row => `${row.fcstTime} ${row.category_ko}: ${row.fcstValue}`)
+                .join('\n') + '\n\n';
+            } else if (section.type === '미세먼지') {
+              assistantMsg += '🌫 미세먼지 정보:\n';
+              assistantMsg += section.data
+                .map(row => `${row.local} ${row.dust_type}: ${row.dust_value}`)
+                .join('\n') + '\n\n';
+            } else if (section.type === '버스') {
+              assistantMsg += '🚌 버스 도착 정보:\n';
+              assistantMsg += section.data
+                .map(row => `${row.bus_number}번 버스 - ${row.arrival_message}`)
+                .join('\n') + '\n\n';
+            } else if (section.type === '지하철') {
+              assistantMsg += '🚇 지하철 도착 정보:\n';
+              assistantMsg += section.data
+                .map(row => `${row.trainLineNm} - ${row.arvlMsg2}`)
+                .join('\n') + '\n\n';
+            }
+          });
+        });
+      } else {
+        assistantMsg = '적절한 응답이 없습니다.';
+      }
+
+      onSend({ role: 'assistant', content: assistantMsg.trim(), replaceId: pendingId });
+    } catch (e) {
+      console.error('❌ 에러:', e);
+      onSend({ role: 'assistant', content: '서버 오류가 발생했습니다.', replaceId: pendingId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full px-4 py-6 bg-white border-t border-gray-200">
+      <div className="flex items-end gap-2 max-w-4xl mx-auto">
+        <textarea
+          className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          rows={1}
+          placeholder="메시지를 입력하세요..."
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e =>
+            e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())
+          }
+          disabled={loading}  // 로딩 중 비활성화
+        />
+        <button
+          onClick={send}
+          disabled={!text.trim() || loading} // 텍스트 없거나 로딩 중 비활성화
+          className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-40"
+        >
+          <Send size={20} className="transform rotate-[320deg]" />
+        </button>
+      </div>
+    </div>
+  );
+}
