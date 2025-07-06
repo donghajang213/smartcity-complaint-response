@@ -9,8 +9,8 @@ class CreateRAG:
         self.file_path = file_path
         self.source_column = source_column
 
-        self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-        # self.embedding = HuggingFaceEmbeddings(model_name = "BAAI/bge-base-en-v1.5")
+        # self.embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.embedding = HuggingFaceEmbeddings(model_name = "BAAI/bge-base-en-v1.5")
         self.raw_docs = None
         self.db = None
 
@@ -104,4 +104,4 @@ if __name__ == "__main__":
     file_path = os.path.join(BASE_DIR, "..", "..", "data", "민원데이터.csv")
     c_rag = CreateRAG(file_path, "답변날짜")
     # c_rag.set_hugging_embedding("BAAI/bge-base-en-v1.5")
-    c_rag.create_rag(collection_name = "qa3_db", persist_directory = "no_chunk_db")
+    c_rag.create_rag(collection_name = "qa2_db", persist_directory = "new_db")
