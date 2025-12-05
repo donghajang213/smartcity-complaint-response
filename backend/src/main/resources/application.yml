@@ -1,0 +1,58 @@
+spring:
+  mvc:
+    cors:
+      enabled: false     # ← 이 설정을 추가하세요. Spring MVC가 CORS 헤더를 붙이지 않습니다.
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/smartcity_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+
+external:
+  fastapi:
+    url: http://fastapi:8001/chat
+
+recaptcha:
+  secret: 6Ld1lmArAAAAAGvarEbptb3-i1gnutfvF3L2w0ub
+
+kakao:
+  rest-api-key: 8413a4aab24c3a25cc81eb161bcd7277
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+ad:
+  upload-dir: /app/uploads/ads
+  base-url:   https://smartcityksva.site/api/ads
+
+# 로컬에서는 현재 프로젝트 루트의 ./ads 폴더를 사용
+#ad:
+#  upload-dir: ./ads
+#  base-url:   http://localhost:8080/api/ads
+
+# ───────────────────────────────────────────────────────────────────
+# 구글 OAuth2 설정 추가
+google:
+  oauth2:
+    client-id: 360808269616-fr8sj0ddjvhejb6o9tjulbb11rr276ov.apps.googleusercontent.com
